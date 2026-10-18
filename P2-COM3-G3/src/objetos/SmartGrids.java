@@ -1,22 +1,36 @@
 package objetos;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class SmartGrids implements ISmartGrids {
 	
 	private HashMap<String, Planta> plantas;
+	private HashMap<String, Boolean> actividadPorPlanta;
 	
 	public SmartGrids() {
-		this.plantas = new HashMap<String, Planta>();
+		this.plantas = new LinkedHashMap<String, Planta>();
+		this.actividadPorPlanta = new LinkedHashMap<String, Boolean>();
 	}
 	
 	@Override
 	public void registrarPlantaSolar(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			double superficieCubierta, int cantidadPaneles, double horasRadiacionDiaria) {
-		// TODO Auto-generated method stub
+		if (plantas.containsKey(nombre)) {
+			throw new RuntimeException("Ya existe una planta con ese nombre");
+		}
+		
+		Planta nueva = new Solar(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
+				eficienciaPromedio, fuentePrimaria, cantidadPaneles, superficieCubierta, horasRadiacionDiaria);
+		
+		plantas.put(nombre, nueva);
+		actividadPorPlanta.put(nombre, true);
 		
 	}
 
@@ -24,54 +38,126 @@ public class SmartGrids implements ISmartGrids {
 	public void registrarPlantaEolica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			int cantidadAerogeneradores, double alturaTorres, double velocidadMinimaViento) {
-		// TODO Auto-generated method stub
+		if (plantas.containsKey(nombre)) {
+			throw new RuntimeException("Ya existe una planta con ese nombre");
+		}
 		
+		Planta nueva = new Eolica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
+				eficienciaPromedio, fuentePrimaria, cantidadAerogeneradores, alturaTorres, velocidadMinimaViento);
+		
+		plantas.put(nombre, nueva);
+		actividadPorPlanta.put(nombre, true);
 	}
 
 	@Override
 	public void registrarPlantaHidraulica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			int cantidadTurbinas, double capacidadEmbalse) {
-		// TODO Auto-generated method stub
+		if (plantas.containsKey(nombre)) {
+			throw new RuntimeException("Ya existe una planta con ese nombre");
+		}
 		
+		Planta nueva = new Hidraulica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
+				eficienciaPromedio, fuentePrimaria, cantidadTurbinas, capacidadEmbalse);
+		
+		plantas.put(nombre, nueva);
+		actividadPorPlanta.put(nombre, true);
 	}
 
 	@Override
 	public void registrarPlantaTermica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String tipoCombustible, double objetivoEmisionesCo2PorHora,
 			double capacidadAlmacenamientoCombustible) {
-		// TODO Auto-generated method stub
+		if (plantas.containsKey(nombre)) {
+			throw new RuntimeException("Ya existe una planta con ese nombre");
+		}
 		
+		Planta nueva = new Termica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
+				tipoCombustible, objetivoEmisionesCo2PorHora, capacidadAlmacenamientoCombustible);
+		
+		plantas.put(nombre, nueva);
+		actividadPorPlanta.put(nombre, true);
 	}
 
 	@Override
 	public List<String> consultarPlantas() {
-		// TODO Auto-generated method stub
-		return null;
+		// "{NOMBRE} ({ACTIVA|INACTIVA}): {FECHA_PUESTA_EN_FUNCIONAMIENTO}"
+		List<String> resultado = new ArrayList<String>();
+		
+		for (Planta planta : plantas.values()) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(planta.getNombre() + " ");
+			sb.append(planta.isEstado() ? "(ACTIVA): " : "(INACTIVA): ");
+			sb.append(planta.getFechaInicio());
+			
+			String sp = sb.toString();
+			resultado.add(sp);
+		}
+		
+		return resultado;
 	}
 
 	@Override
 	public double capacidadMinimaCuota(String nombre) {
-		// TODO Auto-generated method stub
-		return 0;
+		if (!plantas.containsKey(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		Planta planta = plantas.get(nombre);
+		double cuotaMax = 1;
+		
+		if (planta instanceof PlantaRenovable) {
+			PlantaRenovable pr = (PlantaRenovable) planta;
+			cuotaMax = pr.getCapacidad()*pr.getEficienciaPromedio();
+			if (pr instanceof Solar) {
+				Solar s = (Solar) pr;
+				cuotaMax = cuotaMax * (s.getHorasRadiacion()/24);
+			}
+		}
+		else if (planta instanceof Termica) {
+			Termica t = (Termica) planta;
+			cuotaMax = t.getCapacidad() / 2;
+			
+		}
+		
+		else {
+			throw new RuntimeException("Tipo de planta no registrado.");
+		}
+		
+		return cuotaMax;
 	}
 
 	@Override
 	public void activarPlanta(String nombre, String fechaHora) {
-		// TODO Auto-generated method stub
-		
+		if (!plantas.containsKey(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		if (estaActiva(nombre)) {
+			throw new RuntimeException("La planta ya esta activa");
+		}
+		Planta p = plantas.get(nombre);
+		p.activar(fechaHora);
+		actividadPorPlanta.put(nombre, true);
 	}
 
 	@Override
 	public void desactivarPlanta(String nombre, String fechaHora) {
-		// TODO Auto-generated method stub
-		
+		if (!plantas.containsKey(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		if (!estaActiva(nombre)) {
+			throw new RuntimeException("La planta ya esta inactiva");
+		}
+		Planta p = plantas.get(nombre);
+		p.desactivar(fechaHora);
+		actividadPorPlanta.put(nombre, false);
 	}
 
 	@Override
 	public boolean estaActiva(String nombre) {
-		// TODO Auto-generated method stub
-		return false;
+		if (!plantas.containsKey(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		return actividadPorPlanta.get(nombre);
 	}
 
 	@Override

@@ -5,7 +5,7 @@ import java.time.LocalDate;
 public class Hidraulica extends PlantaRenovable {
 	private int cantidadTurbinas;
 	private double capacidadEmbalse;
-	public Hidraulica(String nombre, String direccion, double capacidad, boolean estado, LocalDate fechaInicio,
+	public Hidraulica(String nombre, String direccion, double capacidad, boolean estado, String fechaInicio,
 			double eficienciaPromedio, String fuentePrimaria, int cantidadTurbinas, double capacidadEmbalse) {
 		super(nombre, direccion, capacidad, estado, fechaInicio, eficienciaPromedio, fuentePrimaria);
 		this.cantidadTurbinas = cantidadTurbinas;
