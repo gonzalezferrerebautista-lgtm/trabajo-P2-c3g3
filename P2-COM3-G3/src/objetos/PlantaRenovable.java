@@ -17,5 +17,9 @@ public class PlantaRenovable extends Planta {
 	public String getFuentePrimaria() {
 		return fuentePrimaria;
 	}
+	@Override
+	public double capacidadMinimaCuota() {
+		return super.getCapacidad()*eficienciaPromedio;
+	}
 	
 }

@@ -14,11 +14,9 @@ import java.util.Map;
 public class SmartGrids implements ISmartGrids {
 	
 	private HashMap<String, Planta> plantas;
-	private HashMap<String, Boolean> actividadPorPlanta;
 	
 	public SmartGrids() {
 		this.plantas = new LinkedHashMap<String, Planta>();
-		this.actividadPorPlanta = new LinkedHashMap<String, Boolean>();
 	}
 	
 	@Override
@@ -36,7 +34,6 @@ public class SmartGrids implements ISmartGrids {
 				eficienciaPromedio, fuentePrimaria, cantidadPaneles, superficieCubierta, horasRadiacionDiaria);
 		
 		plantas.put(nombre, nueva);
-		actividadPorPlanta.put(nombre, true);
 		
 	}
 
@@ -55,7 +52,6 @@ public class SmartGrids implements ISmartGrids {
 				eficienciaPromedio, fuentePrimaria, cantidadAerogeneradores, alturaTorres, velocidadMinimaViento);
 		
 		plantas.put(nombre, nueva);
-		actividadPorPlanta.put(nombre, true);
 	}
 
 	@Override
@@ -73,7 +69,6 @@ public class SmartGrids implements ISmartGrids {
 				eficienciaPromedio, fuentePrimaria, cantidadTurbinas, capacidadEmbalse);
 		
 		plantas.put(nombre, nueva);
-		actividadPorPlanta.put(nombre, true);
 	}
 
 	@Override
@@ -92,7 +87,6 @@ public class SmartGrids implements ISmartGrids {
 				tipoCombustible, objetivoEmisionesCo2PorHora, capacidadAlmacenamientoCombustible);
 		
 		plantas.put(nombre, nueva);
-		actividadPorPlanta.put(nombre, true);
 	}
 
 	@Override
@@ -101,13 +95,7 @@ public class SmartGrids implements ISmartGrids {
 		List<String> resultado = new ArrayList<String>();
 		
 		for (Planta planta : plantas.values()) {
-			StringBuilder sb = new StringBuilder();
-			sb.append(planta.getNombre() + " ");
-			sb.append(planta.isEstado() ? "(ACTIVA): " : "(INACTIVA): ");
-			sb.append(planta.getFechaInicio());
-			
-			String sp = sb.toString();
-			resultado.add(sp);
+			resultado.add(planta.getDetalle());
 		}
 		
 		return resultado;
@@ -119,27 +107,7 @@ public class SmartGrids implements ISmartGrids {
 			throw new RuntimeException("No existe una planta con ese nombre");
 		}
 		Planta planta = plantas.get(nombre);
-		double cuotaMax = 1;
-		
-		if (planta instanceof PlantaRenovable) {
-			PlantaRenovable pr = (PlantaRenovable) planta;
-			cuotaMax = pr.getCapacidad()*pr.getEficienciaPromedio();
-			if (pr instanceof Solar) {
-				Solar s = (Solar) pr;
-				cuotaMax = cuotaMax * (s.getHorasRadiacion()/24);
-			}
-		}
-		else if (planta instanceof Termica) {
-			Termica t = (Termica) planta;
-			cuotaMax = t.getCapacidad() / 2;
-			
-		}
-		
-		else {
-			throw new RuntimeException("Tipo de planta no registrado.");
-		}
-		
-		return cuotaMax;
+		return planta.capacidadMinimaCuota();
 	}
 
 	@Override
@@ -155,7 +123,6 @@ public class SmartGrids implements ISmartGrids {
 		}
 		Planta p = plantas.get(nombre);
 		p.activar(fechaHora);
-		actividadPorPlanta.put(nombre, true);
 	}
 
 	@Override
@@ -171,7 +138,6 @@ public class SmartGrids implements ISmartGrids {
 		}
 		Planta p = plantas.get(nombre);
 		p.desactivar(fechaHora);
-		actividadPorPlanta.put(nombre, false);
 	}
 
 	@Override
@@ -179,7 +145,7 @@ public class SmartGrids implements ISmartGrids {
 		if (!plantas.containsKey(nombre)) {
 			throw new RuntimeException("No existe una planta con ese nombre");
 		}
-		return actividadPorPlanta.get(nombre);
+		return plantas.get(nombre).isEstado();
 	}
 
 	@Override
@@ -278,23 +244,8 @@ public class SmartGrids implements ISmartGrids {
 		if (LocalDate.parse(fechaDesde).isAfter(LocalDate.parse(fechaHasta))) {
 			throw new RuntimeException("fechaDesde es posterior a fechaHasta");
 		}
-		LocalDate desde = LocalDate.parse(fechaDesde);
-		LocalDate hasta = LocalDate.parse(fechaHasta);
-		double capacidadMinimaCuota = capacidadMinimaCuota(nombre);
-		Planta planta = plantas.get(nombre);
-		int[] resultado = new int[24];
 		
-		for (Map.Entry<LocalDateTime, RegistroMonitoreo> entry : planta.getMonitoreos().entrySet()) {
-			LocalDateTime tiempoRegistro = entry.getKey();
-			if (!tiempoRegistro.toLocalDate().isBefore(desde) && !tiempoRegistro.toLocalDate().isAfter(hasta)) {
-				double generado = entry.getValue().getEnergiaGenerada();
-				if (generado >= capacidadMinimaCuota) {
-					resultado[tiempoRegistro.getHour()]+=1;
-				}
-			}
-		}
-		
-		return resultado;
+		return plantas.get(nombre).historiogramaCumplimiento(nombre, fechaDesde, fechaHasta);
 		
 	}
 

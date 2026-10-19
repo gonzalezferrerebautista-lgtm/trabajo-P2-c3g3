@@ -7,13 +7,13 @@ import java.time.temporal.ChronoUnit;
 public class Termica extends Planta {
 	private String tipoCombustible;
 	private double objetivoEmision;
-	private double capacidadAlmacenamiento;
+	private double capacidadAlmacenamientoCombustible;
 	public Termica(String nombre, String direccion, double capacidad, boolean estado, String fechaInicio,
-			String tipoCombustible, double objetivoEmision, double capacidadAlmacenamiento) {
+			String tipoCombustible, double objetivoEmision, double capacidadAlmacenamientoCombustible) {
 		super(nombre, direccion, capacidad, estado, fechaInicio);
 		this.tipoCombustible = tipoCombustible;
 		this.objetivoEmision = objetivoEmision;
-		this.capacidadAlmacenamiento = capacidadAlmacenamiento;
+		this.capacidadAlmacenamientoCombustible = capacidadAlmacenamientoCombustible;
 	}
 	
 	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias, double co2Emitido, double combustibleUtilizado) {
@@ -37,7 +37,12 @@ public class Termica extends Planta {
 		return objetivoEmision;
 	}
 	public double getCapacidadAlmacenamiento() {
-		return capacidadAlmacenamiento;
+		return capacidadAlmacenamientoCombustible;
+	}
+
+	@Override
+	public double capacidadMinimaCuota() {
+		return super.getCapacidad()/2;
 	}
 	
 }

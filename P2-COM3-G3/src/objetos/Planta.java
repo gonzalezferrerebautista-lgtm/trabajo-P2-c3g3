@@ -27,6 +27,8 @@ public abstract class Planta {
 	public boolean cumpleCuota(String fecha, int hora) {
 		return false;
 	}
+	
+	public abstract double capacidadMinimaCuota();
 
 	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias) {
 		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
@@ -79,9 +81,21 @@ public abstract class Planta {
 		return resultado;
 	}
 	
-	public int[] historiogramaCumplimiento() {
+	public int[] historiogramaCumplimiento(String nombre, String fechaDesde, String fechaHasta) {
+		LocalDate desde = LocalDate.parse(fechaDesde);
+		LocalDate hasta = LocalDate.parse(fechaHasta);
+		double capacidadMinimaCuota = capacidadMinimaCuota();
 		int[] resultado = new int[24];
 		
+		for (Map.Entry<LocalDateTime, RegistroMonitoreo> entry : monitoreos.entrySet()) {
+			LocalDateTime tiempoRegistro = entry.getKey();
+			if (!tiempoRegistro.toLocalDate().isBefore(desde) && !tiempoRegistro.toLocalDate().isAfter(hasta)) {
+				double generado = entry.getValue().getEnergiaGenerada();
+				if (generado >= capacidadMinimaCuota) {
+					resultado[tiempoRegistro.getHour()]+=1;
+				}
+			}
+		}
 		return resultado;
 	}
 	
@@ -107,6 +121,22 @@ public abstract class Planta {
 
 	public HashMap<LocalDateTime, RegistroMonitoreo> getMonitoreos() {
 		return monitoreos;
+	}
+
+	@Override
+	public String toString() {
+		return "Planta [nombre=" + nombre + ", direccion=" + direccion + ", capacidad=" + capacidad + ", estado="
+				+ estado + ", fechaInicio=" + fechaInicio + ", monitoreos=" + monitoreos + "]";
+	}
+	
+	public String getDetalle() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.nombre + " ");
+		sb.append(this.estado ? "(ACTIVA): " : "(INACTIVA): ");
+		sb.append(this.fechaInicio);
+		
+		String sp = sb.toString();
+		return sp;
 	}
 	
 }

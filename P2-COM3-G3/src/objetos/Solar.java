@@ -23,5 +23,8 @@ public class Solar extends PlantaRenovable {
 	public double getHorasRadiacion() {
 		return horasRadiacion;
 	}
-	
+	@Override
+	public double capacidadMinimaCuota() {
+		return super.capacidadMinimaCuota()*(horasRadiacion/24);
+	}
 }
