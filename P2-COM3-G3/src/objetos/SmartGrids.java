@@ -1,6 +1,9 @@
 package objetos;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -25,6 +28,9 @@ public class SmartGrids implements ISmartGrids {
 		if (plantas.containsKey(nombre)) {
 			throw new RuntimeException("Ya existe una planta con ese nombre");
 		}
+		if (!esFechaHoraValida(fechaHoraPuestaEnFuncionamiento)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
 		
 		Planta nueva = new Solar(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadPaneles, superficieCubierta, horasRadiacionDiaria);
@@ -41,6 +47,9 @@ public class SmartGrids implements ISmartGrids {
 		if (plantas.containsKey(nombre)) {
 			throw new RuntimeException("Ya existe una planta con ese nombre");
 		}
+		if (!esFechaHoraValida(fechaHoraPuestaEnFuncionamiento)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
 		
 		Planta nueva = new Eolica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadAerogeneradores, alturaTorres, velocidadMinimaViento);
@@ -56,6 +65,9 @@ public class SmartGrids implements ISmartGrids {
 		if (plantas.containsKey(nombre)) {
 			throw new RuntimeException("Ya existe una planta con ese nombre");
 		}
+		if (!esFechaHoraValida(fechaHoraPuestaEnFuncionamiento)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
 		
 		Planta nueva = new Hidraulica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadTurbinas, capacidadEmbalse);
@@ -70,6 +82,10 @@ public class SmartGrids implements ISmartGrids {
 			double capacidadAlmacenamientoCombustible) {
 		if (plantas.containsKey(nombre)) {
 			throw new RuntimeException("Ya existe una planta con ese nombre");
+		}
+		
+		if (!esFechaHoraValida(fechaHoraPuestaEnFuncionamiento)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
 		
 		Planta nueva = new Termica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
@@ -131,6 +147,9 @@ public class SmartGrids implements ISmartGrids {
 		if (!plantas.containsKey(nombre)) {
 			throw new RuntimeException("No existe una planta con ese nombre");
 		}
+		if (!esFechaHoraValida(fechaHora)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
 		if (estaActiva(nombre)) {
 			throw new RuntimeException("La planta ya esta activa");
 		}
@@ -143,6 +162,9 @@ public class SmartGrids implements ISmartGrids {
 	public void desactivarPlanta(String nombre, String fechaHora) {
 		if (!plantas.containsKey(nombre)) {
 			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		if (!esFechaHoraValida(fechaHora)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
 		if (!estaActiva(nombre)) {
 			throw new RuntimeException("La planta ya esta inactiva");
@@ -162,40 +184,118 @@ public class SmartGrids implements ISmartGrids {
 
 	@Override
 	public void registrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias) {
-		// TODO Auto-generated method stub
+		if (!plantas.containsKey(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		if (!esFechaHoraValida(fechaHora)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+		if (!estaActiva(nombre)) {
+			throw new RuntimeException("La planta esta inactiva");
+		}
+		if (energiaGenerada < 0 || incidencias < 0) {
+			throw new RuntimeException("Los datos no pueden ser negativos.");
+		}
 		
+		Planta planta = this.plantas.get(nombre);
+		planta.registrarMonitoreo(fechaHora, energiaGenerada, incidencias);
 	}
 
 	@Override
 	public void registrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias,
 			double velocidadViento) {
-		// TODO Auto-generated method stub
+		if (!plantas.containsKey(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		if (!esFechaHoraValida(fechaHora)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+		if (!estaActiva(nombre)) {
+			throw new RuntimeException("La planta esta inactiva");
+		}
+		if (energiaGenerada < 0 || incidencias < 0 || velocidadViento < 0) {
+			throw new RuntimeException("Los datos no pueden ser negativos.");
+		}
+		if (!(this.plantas.get(nombre) instanceof Eolica)) {
+			throw new RuntimeException("No existe una planta eolica con ese nombre");
+		}
 		
+		Eolica planta = (Eolica) this.plantas.get(nombre);
+		planta.registrarMonitoreo(fechaHora, energiaGenerada, incidencias, velocidadViento);
 	}
 
 	@Override
 	public void registrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias,
 			double co2Emitido, double combustibleUtilizado) {
-		// TODO Auto-generated method stub
+		if (!plantas.containsKey(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		if (!esFechaHoraValida(fechaHora)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+		if (!estaActiva(nombre)) {
+			throw new RuntimeException("La planta esta inactiva");
+		}
+		
+		if (energiaGenerada < 0 || incidencias < 0 || co2Emitido < 0 || combustibleUtilizado < 0) {
+			throw new RuntimeException("Los datos no pueden ser negativos.");
+		}
+		if (!(this.plantas.get(nombre) instanceof Termica)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		
+		Termica planta = (Termica) this.plantas.get(nombre);
+		planta.registrarMonitoreo(fechaHora, energiaGenerada, incidencias, co2Emitido, combustibleUtilizado);
 		
 	}
 
 	@Override
 	public double totalGenerado(String nombre) {
-		// TODO Auto-generated method stub
-		return 0;
+		if (!plantas.containsKey(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		Planta planta = plantas.get(nombre);
+		return planta.totalGenerado();
 	}
 
 	@Override
 	public int[] incidenciasPorHora(String nombre) {
-		// TODO Auto-generated method stub
-		return null;
+		if (!plantas.containsKey(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		Planta planta = plantas.get(nombre);
+		return planta.incidenciasPorHora();
 	}
 
 	@Override
 	public int[] histogramaCumplimiento(String nombre, String fechaDesde, String fechaHasta) {
-		// TODO Auto-generated method stub
-		return null;
+		if (!plantas.containsKey(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		if (!esFechaValida(fechaDesde) || !esFechaValida(fechaHasta)) {
+			throw new RuntimeException("La fecha no tiene un formato valido");
+		}
+		if (LocalDate.parse(fechaDesde).isAfter(LocalDate.parse(fechaHasta))) {
+			throw new RuntimeException("fechaDesde es posterior a fechaHasta");
+		}
+		LocalDate desde = LocalDate.parse(fechaDesde);
+		LocalDate hasta = LocalDate.parse(fechaHasta);
+		double capacidadMinimaCuota = capacidadMinimaCuota(nombre);
+		Planta planta = plantas.get(nombre);
+		int[] resultado = new int[24];
+		
+		for (Map.Entry<LocalDateTime, RegistroMonitoreo> entry : planta.getMonitoreos().entrySet()) {
+			LocalDateTime tiempoRegistro = entry.getKey();
+			if (!tiempoRegistro.toLocalDate().isBefore(desde) && !tiempoRegistro.toLocalDate().isAfter(hasta)) {
+				double generado = entry.getValue().getEnergiaGenerada();
+				if (generado >= capacidadMinimaCuota) {
+					resultado[tiempoRegistro.getHour()]+=1;
+				}
+			}
+		}
+		
+		return resultado;
+		
 	}
 
 	@Override
@@ -233,5 +333,22 @@ public class SmartGrids implements ISmartGrids {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public static boolean esFechaHoraValida(String texto) {
+        try {
+            LocalDateTime.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
 
+	public static boolean esFechaValida(String texto) {
+        try {
+            LocalDate.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
 }

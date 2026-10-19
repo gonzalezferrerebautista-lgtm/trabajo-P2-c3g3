@@ -1,29 +1,43 @@
 package objetos;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public abstract class Planta {
-	private String nombre;
+	protected String nombre;
 	private String direccion;
 	private double capacidad;
 	private boolean estado;
 	private String fechaInicio;
-	private HashMap<LocalDate, RegistroMonitoreo> monitoreos;
+	protected HashMap<LocalDateTime, RegistroMonitoreo> monitoreos;
 	public Planta(String nombre, String direccion, double capacidad, boolean estado, String fechaInicio) {
 		this.nombre = nombre;
 		this.direccion = direccion;
 		this.capacidad = capacidad;
 		this.estado = estado;
 		this.fechaInicio = fechaInicio;
-		this.monitoreos = new HashMap<LocalDate, RegistroMonitoreo>();
+		this.monitoreos = new LinkedHashMap<LocalDateTime, RegistroMonitoreo>();
 	}
 
-	public boolean cumpleCuota(LocalDate fecha, int hora) {
+	public boolean cumpleCuota(String fecha, int hora) {
 		return false;
 	}
 
-	public void registrarMonitoreo(LocalDate fecha, int hora, int incidencias, double energiaGenerada) {
+	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias) {
+		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
+		if (this.monitoreos.containsKey(fechaHoraParseada)) {
+			throw new RuntimeException("Ya hay un monitoreo para esta fecha + hora.");
+		}
+		RegistroMonitoreo registro = new RegistroMonitoreo(this.nombre, fechaHoraParseada, incidencias, energiaGenerada);
+		monitoreos.put(fechaHoraParseada, registro);
 		
 	}
 	
@@ -40,6 +54,36 @@ public abstract class Planta {
 		this.estado = false;
 	}
 	
+	public double totalGenerado() {
+		double total = 0;
+	
+		for (RegistroMonitoreo monitoreo : monitoreos.values()) {
+			total += monitoreo.getEnergiaGenerada();
+		}
+		return total;
+	}
+	
+	public int[] incidenciasPorHora() {
+		int[] resultado = new int[24];
+		
+		LocalDate ultimoDia = Collections.max(this.monitoreos.keySet()).toLocalDate();
+		
+		
+		for (Map.Entry<LocalDateTime, RegistroMonitoreo> entry : monitoreos.entrySet()) {
+			if (entry.getKey().toLocalDate().equals(ultimoDia)) {
+				int hora = entry.getKey().getHour();
+				int incidencias = entry.getValue().getIncidencias();
+				resultado[hora] = incidencias;
+			}
+		}
+		return resultado;
+	}
+	
+	public int[] historiogramaCumplimiento() {
+		int[] resultado = new int[24];
+		
+		return resultado;
+	}
 	
 	public String getNombre() {
 		return nombre;
@@ -61,7 +105,7 @@ public abstract class Planta {
 		return fechaInicio;
 	}
 
-	public HashMap<LocalDate, RegistroMonitoreo> getMonitoreos() {
+	public HashMap<LocalDateTime, RegistroMonitoreo> getMonitoreos() {
 		return monitoreos;
 	}
 	

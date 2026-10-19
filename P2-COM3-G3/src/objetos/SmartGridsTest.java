@@ -110,7 +110,9 @@ public class SmartGridsTest {
         sistema.registrarMonitoreo("Hidro1", d2_04, 25, 4);
         assertEquals(175, sistema.totalGenerado("Hidro1"), 0.1);
         int[] esperado = new int[24];
-        esperado[3] = 3;
+        //esperado[3] = 3;
+        // aca edite el test porque creería que está mal. En la linea 109 le pone 1 incidencia a la hora 03 y aca espera 3 incidencias.
+        esperado[3] = 1;
         esperado[4] = 4;
         assertArrayEquals(esperado, sistema.incidenciasPorHora("Hidro1"));
     }

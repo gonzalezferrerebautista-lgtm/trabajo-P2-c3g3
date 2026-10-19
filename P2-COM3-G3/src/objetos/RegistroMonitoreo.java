@@ -1,19 +1,34 @@
 package objetos;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class RegistroMonitoreo {
 	private String nombrePlanta;
-	private LocalDate fecha;
-	private int hora;
+	private LocalDateTime fecha;
 	private int incidencias;
-	protected double energiaGenerada;
+	private double energiaGenerada;
 	
-	public RegistroMonitoreo(String nombrePlanta, LocalDate fecha, int hora, int incidencias, double energiaGenerada) {
+	public RegistroMonitoreo(String nombrePlanta, LocalDateTime fecha, int incidencias, double energiaGenerada) {
 		this.nombrePlanta = nombrePlanta;
 		this.fecha = fecha;
-		this.hora = hora;
 		this.incidencias = incidencias;
 		this.energiaGenerada = energiaGenerada;
+	}
+
+	public String getNombrePlanta() {
+		return nombrePlanta;
+	}
+
+	public LocalDateTime getFecha() {
+		return fecha;
+	}
+
+	public int getIncidencias() {
+		return incidencias;
+	}
+
+	public double getEnergiaGenerada() {
+		return energiaGenerada;
 	}
 }

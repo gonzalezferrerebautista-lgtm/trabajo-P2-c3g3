@@ -1,6 +1,8 @@
 package objetos;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 public class Eolica extends PlantaRenovable {
 	private int cantidadAerogeneradores;
@@ -13,5 +15,19 @@ public class Eolica extends PlantaRenovable {
 		this.cantidadAerogeneradores = cantidadAerogeneradores;
 		this.alturaTorre = alturaTorre;
 		this.velocidadMinViento = velocidadMinViento;
+	}
+	
+	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias, double velocidadViento) {
+		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
+		if (monitoreos.containsKey(fechaHoraParseada)) {
+			throw new RuntimeException("Ya hay un monitoreo para esta fecha + hora.");
+		}
+		
+		RegistroMonitoreoEolico registro = new RegistroMonitoreoEolico(nombre, fechaHoraParseada, incidencias, energiaGenerada, velocidadViento);
+		monitoreos.put(fechaHoraParseada, registro);
+		
 	}
 }
