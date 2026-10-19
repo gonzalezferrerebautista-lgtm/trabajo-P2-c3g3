@@ -190,7 +190,7 @@ public class SmartGrids implements ISmartGrids {
 			throw new RuntimeException("fechaDesde es posterior a fechaHasta");
 		}
 		
-		return plantas.get(nombre).historiogramaCumplimiento(nombre, fechaDesde, fechaHasta);
+		return plantas.get(nombre).histogramaCumplimiento(nombre, fechaDesde, fechaHasta);
 		
 	}
 

@@ -81,7 +81,7 @@ public abstract class Planta {
 		return resultado;
 	}
 	
-	public int[] historiogramaCumplimiento(String nombre, String fechaDesde, String fechaHasta) {
+	public int[] histogramaCumplimiento(String nombre, String fechaDesde, String fechaHasta) {
 		LocalDate desde = LocalDate.parse(fechaDesde);
 		LocalDate hasta = LocalDate.parse(fechaHasta);
 		double capacidadMinimaCuota = capacidadMinimaCuota();
