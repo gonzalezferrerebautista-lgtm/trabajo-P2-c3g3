@@ -8,7 +8,7 @@ public class RegistroMonitoreo {
 	private LocalDateTime fecha;
 	private int incidencias;
 	private double energiaGenerada;
-	
+
 	public RegistroMonitoreo(String nombrePlanta, LocalDateTime fecha, int incidencias, double energiaGenerada) {
 		this.nombrePlanta = nombrePlanta;
 		this.fecha = fecha;

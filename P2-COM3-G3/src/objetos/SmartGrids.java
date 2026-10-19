@@ -10,39 +10,40 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
 public class SmartGrids implements ISmartGrids {
-	
+
 	private HashMap<String, Planta> plantas;
-	
+
 	public SmartGrids() {
 		this.plantas = new LinkedHashMap<String, Planta>();
 	}
-	
+
 	@Override
 	public void registrarPlantaSolar(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			double superficieCubierta, int cantidadPaneles, double horasRadiacionDiaria) {
-		
+
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
-		
+
 		Planta nueva = new Solar(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadPaneles, superficieCubierta, horasRadiacionDiaria);
-		
+
 		plantas.put(nombre, nueva);
-		
+
 	}
 
 	@Override
 	public void registrarPlantaEolica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			int cantidadAerogeneradores, double alturaTorres, double velocidadMinimaViento) {
-		
+
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
-		
+
 		Planta nueva = new Eolica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadAerogeneradores, alturaTorres, velocidadMinimaViento);
-		
+
 		plantas.put(nombre, nueva);
 	}
 
@@ -50,12 +51,12 @@ public class SmartGrids implements ISmartGrids {
 	public void registrarPlantaHidraulica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			int cantidadTurbinas, double capacidadEmbalse) {
-		
+
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
-		
+
 		Planta nueva = new Hidraulica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadTurbinas, capacidadEmbalse);
-		
+
 		plantas.put(nombre, nueva);
 	}
 
@@ -63,12 +64,12 @@ public class SmartGrids implements ISmartGrids {
 	public void registrarPlantaTermica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String tipoCombustible, double objetivoEmisionesCo2PorHora,
 			double capacidadAlmacenamientoCombustible) {
-		
+
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
-		
+
 		Planta nueva = new Termica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				tipoCombustible, objetivoEmisionesCo2PorHora, capacidadAlmacenamientoCombustible);
-		
+
 		plantas.put(nombre, nueva);
 	}
 
@@ -76,11 +77,11 @@ public class SmartGrids implements ISmartGrids {
 	public List<String> consultarPlantas() {
 		// "{NOMBRE} ({ACTIVA|INACTIVA}): {FECHA_PUESTA_EN_FUNCIONAMIENTO}"
 		List<String> resultado = new ArrayList<String>();
-		
+
 		for (Planta planta : plantas.values()) {
 			resultado.add(planta.getDetalle());
 		}
-		
+
 		return resultado;
 	}
 
@@ -96,7 +97,7 @@ public class SmartGrids implements ISmartGrids {
 	@Override
 	public void activarPlanta(String nombre, String fechaHora) {
 		validacionesEstadoPlanta(nombre, fechaHora);
-		
+
 		Planta p = plantas.get(nombre);
 		p.activar(fechaHora);
 	}
@@ -104,7 +105,7 @@ public class SmartGrids implements ISmartGrids {
 	@Override
 	public void desactivarPlanta(String nombre, String fechaHora) {
 		validacionesEstadoPlanta(nombre, fechaHora);
-		
+
 		Planta p = plantas.get(nombre);
 		p.desactivar(fechaHora);
 	}
@@ -120,7 +121,7 @@ public class SmartGrids implements ISmartGrids {
 	@Override
 	public void registrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias) {
 		validacionesRegistrarMonitoreo(nombre, fechaHora, energiaGenerada, incidencias);
-		
+
 		Planta planta = this.plantas.get(nombre);
 		planta.registrarMonitoreo(fechaHora, energiaGenerada, incidencias);
 	}
@@ -128,16 +129,16 @@ public class SmartGrids implements ISmartGrids {
 	@Override
 	public void registrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias,
 			double velocidadViento) {
-		
+
 		validacionesRegistrarMonitoreo(nombre, fechaHora, energiaGenerada, incidencias);
-		
+
 		if (velocidadViento < 0) {
 			throw new RuntimeException("Los datos no pueden ser negativos.");
 		}
 		if (!(this.plantas.get(nombre) instanceof Eolica)) {
 			throw new RuntimeException("No existe una planta eolica con ese nombre");
 		}
-		
+
 		Eolica planta = (Eolica) this.plantas.get(nombre);
 		planta.registrarMonitoreo(fechaHora, energiaGenerada, incidencias, velocidadViento);
 	}
@@ -145,19 +146,19 @@ public class SmartGrids implements ISmartGrids {
 	@Override
 	public void registrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias,
 			double co2Emitido, double combustibleUtilizado) {
-		
+
 		validacionesRegistrarMonitoreo(nombre, fechaHora, energiaGenerada, incidencias);
-		
+
 		if (co2Emitido < 0 || combustibleUtilizado < 0) {
 			throw new RuntimeException("Los datos no pueden ser negativos.");
 		}
 		if (!(this.plantas.get(nombre) instanceof Termica)) {
 			throw new RuntimeException("No existe una planta con ese nombre");
 		}
-		
+
 		Termica planta = (Termica) this.plantas.get(nombre);
 		planta.registrarMonitoreo(fechaHora, energiaGenerada, incidencias, co2Emitido, combustibleUtilizado);
-		
+
 	}
 
 	@Override
@@ -189,21 +190,50 @@ public class SmartGrids implements ISmartGrids {
 		if (LocalDate.parse(fechaDesde).isAfter(LocalDate.parse(fechaHasta))) {
 			throw new RuntimeException("fechaDesde es posterior a fechaHasta");
 		}
-		
+
 		return plantas.get(nombre).histogramaCumplimiento(nombre, fechaDesde, fechaHasta);
-		
+
 	}
 
 	@Override
 	public Map<String, Integer> plantasRenovablesPorFuente() {
-		// TODO Auto-generated method stub
-		return null;
+		Map<String, Integer> cantPlantasRenovablesPorFuente;
+		cantPlantasRenovablesPorFuente = new HashMap<>();
+		for (Planta p : plantas.values()) {
+			if (p instanceof PlantaRenovable) {
+				PlantaRenovable pr = (PlantaRenovable) p;
+				String fuente = pr.getFuentePrimaria();
+				if (cantPlantasRenovablesPorFuente.containsKey(fuente)) {
+					int cantActual = cantPlantasRenovablesPorFuente.get(fuente);
+					cantPlantasRenovablesPorFuente.put(fuente, cantActual + 1);
+				} else {
+					cantPlantasRenovablesPorFuente.put(fuente, 1);
+				}
+
+			}
+		}
+		return cantPlantasRenovablesPorFuente;
+
 	}
 
 	@Override
 	public List<String> plantasQueNuncaCumplieronCuota() {
-		// TODO Auto-generated method stub
-		return null;
+		List<String> plantasQueNuncaCumplieronCuota = new ArrayList<>();
+		for (Planta p : plantas.values()) {
+			int cumplio = 0;
+			for (LocalDateTime fechaHora : p.getMonitoreos().keySet()) {
+				String fecha = fechaHora.toLocalDate().toString();
+				int hora = fechaHora.getHour();
+				if (p.cumpleCuota(fecha, hora)) {
+					cumplio++;
+				}
+			}
+			if (cumplio == 0) {
+				plantasQueNuncaCumplieronCuota.add(p.getNombre());
+			}
+		}
+		return plantasQueNuncaCumplieronCuota;
+
 	}
 
 	@Override
@@ -214,8 +244,19 @@ public class SmartGrids implements ISmartGrids {
 
 	@Override
 	public int limpiarMonitoreosSinDatos() {
-		// TODO Auto-generated method stub
-		return 0;
+		int cantBorrados = 0;
+		for (Planta p : plantas.values()) {
+			Iterator<RegistroMonitoreo> iterator = p.getMonitoreos().values().iterator();
+			while (iterator.hasNext()) {
+				RegistroMonitoreo r = iterator.next();
+				if (r.getEnergiaGenerada() == 0 && r.getIncidencias() == 0) {
+					iterator.remove();
+					cantBorrados++;
+				}
+			}
+
+		}
+		return cantBorrados;
 	}
 
 	@Override
@@ -224,30 +265,36 @@ public class SmartGrids implements ISmartGrids {
 		return null;
 	}
 
-	@Override
+	@Override // falta verificar por horas
 	public List<String> plantasInactivasEn(String fechaHora) {
-		// TODO Auto-generated method stub
-		return null;
+		List<String> plantasInactivas = new ArrayList<>();
+		for (Planta p : plantas.values()) {
+			if (p.isEstado() == false) {
+				plantasInactivas.add(p.getNombre());
+			}
+
+		}
+		return plantasInactivas;
 	}
-	
+
 	protected static boolean esFechaHoraValida(String texto) {
-        try {
-            LocalDateTime.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
-        }
-    }
+		try {
+			LocalDateTime.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+			return true;
+		} catch (DateTimeParseException e) {
+			return false;
+		}
+	}
 
 	protected static boolean esFechaValida(String texto) {
-        try {
-            LocalDate.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE);
-            return true;
-        } catch (DateTimeParseException e) {
-            return false;
-        }
-    }
-	
+		try {
+			LocalDate.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE);
+			return true;
+		} catch (DateTimeParseException e) {
+			return false;
+		}
+	}
+
 	private void validacionesRegistroPlanta(String nombre, String fechaHoraPuestaEnFuncionamiento) {
 		if (existePlanta(nombre)) {
 			throw new RuntimeException("Ya existe una planta con ese nombre");
@@ -256,7 +303,7 @@ public class SmartGrids implements ISmartGrids {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
 	}
-	
+
 	private void validacionesEstadoPlanta(String nombre, String fechaHora) {
 		if (!existePlanta(nombre)) {
 			throw new RuntimeException("No existe una planta con ese nombre");
@@ -268,7 +315,9 @@ public class SmartGrids implements ISmartGrids {
 			throw new RuntimeException("La planta ya esta activa");
 		}
 	}
-	private void validacionesRegistrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias) {
+
+	private void validacionesRegistrarMonitoreo(String nombre, String fechaHora, double energiaGenerada,
+			int incidencias) {
 		if (!existePlanta(nombre)) {
 			throw new RuntimeException("No existe una planta con ese nombre");
 		}
@@ -282,7 +331,7 @@ public class SmartGrids implements ISmartGrids {
 			throw new RuntimeException("Los datos no pueden ser negativos.");
 		}
 	}
-	
+
 	private boolean existePlanta(String nombre) {
 		return plantas.containsKey(nombre);
 	}

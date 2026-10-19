@@ -8,6 +8,7 @@ public class Termica extends Planta {
 	private String tipoCombustible;
 	private double objetivoEmision;
 	private double capacidadAlmacenamientoCombustible;
+
 	public Termica(String nombre, String direccion, double capacidad, boolean estado, String fechaInicio,
 			String tipoCombustible, double objetivoEmision, double capacidadAlmacenamientoCombustible) {
 		super(nombre, direccion, capacidad, estado, fechaInicio);
@@ -15,8 +16,21 @@ public class Termica extends Planta {
 		this.objetivoEmision = objetivoEmision;
 		this.capacidadAlmacenamientoCombustible = capacidadAlmacenamientoCombustible;
 	}
-	
-	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias, double co2Emitido, double combustibleUtilizado) {
+
+	@Override
+	public boolean cumpleCuota(String fecha, int hora) {
+		LocalDateTime clave = LocalDate.parse(fecha).atTime(hora, 0);
+		RegistroMonitoreo r = monitoreos.get(clave);
+		if (r == null) {
+			return false;
+		}
+		RegistroMonitoreoTermico rt = (RegistroMonitoreoTermico) r;
+		return rt.getEnergiaGenerada() >= getCapacidad() / 2 && rt.getCantidadCO2Generado() < objetivoEmision;
+
+	}
+
+	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias, double co2Emitido,
+			double combustibleUtilizado) {
 		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
@@ -24,25 +38,28 @@ public class Termica extends Planta {
 		if (monitoreos.containsKey(fechaHoraParseada)) {
 			throw new RuntimeException("Ya hay un monitoreo para esta fecha + hora.");
 		}
-		
-		RegistroMonitoreoTermico registro = new RegistroMonitoreoTermico(nombre, fechaHoraParseada, incidencias, energiaGenerada, co2Emitido, combustibleUtilizado);
+
+		RegistroMonitoreoTermico registro = new RegistroMonitoreoTermico(nombre, fechaHoraParseada, incidencias,
+				energiaGenerada, co2Emitido, combustibleUtilizado);
 		monitoreos.put(fechaHoraParseada, registro);
-		
+
 	}
-	
+
 	public String getTipoCombustible() {
 		return tipoCombustible;
 	}
+
 	public double getObjetivoEmision() {
 		return objetivoEmision;
 	}
+
 	public double getCapacidadAlmacenamiento() {
 		return capacidadAlmacenamientoCombustible;
 	}
 
 	@Override
 	public double capacidadMinimaCuota() {
-		return super.getCapacidad()/2;
+		return super.getCapacidad() / 2;
 	}
-	
+
 }
