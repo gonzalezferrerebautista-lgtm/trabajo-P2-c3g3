@@ -119,9 +119,6 @@ public abstract class Planta {
 		return fechaInicio;
 	}
 
-	public HashMap<LocalDateTime, RegistroMonitoreo> getMonitoreos() {
-		return monitoreos;
-	}
 
 	@Override
 	public String toString() {

@@ -23,12 +23,8 @@ public class SmartGrids implements ISmartGrids {
 	public void registrarPlantaSolar(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			double superficieCubierta, int cantidadPaneles, double horasRadiacionDiaria) {
-		if (plantas.containsKey(nombre)) {
-			throw new RuntimeException("Ya existe una planta con ese nombre");
-		}
-		if (!esFechaHoraValida(fechaHoraPuestaEnFuncionamiento)) {
-			throw new RuntimeException("La fecha y hora no tienen un formato valido");
-		}
+		
+		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
 		
 		Planta nueva = new Solar(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadPaneles, superficieCubierta, horasRadiacionDiaria);
@@ -41,12 +37,8 @@ public class SmartGrids implements ISmartGrids {
 	public void registrarPlantaEolica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			int cantidadAerogeneradores, double alturaTorres, double velocidadMinimaViento) {
-		if (plantas.containsKey(nombre)) {
-			throw new RuntimeException("Ya existe una planta con ese nombre");
-		}
-		if (!esFechaHoraValida(fechaHoraPuestaEnFuncionamiento)) {
-			throw new RuntimeException("La fecha y hora no tienen un formato valido");
-		}
+		
+		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
 		
 		Planta nueva = new Eolica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadAerogeneradores, alturaTorres, velocidadMinimaViento);
@@ -58,12 +50,8 @@ public class SmartGrids implements ISmartGrids {
 	public void registrarPlantaHidraulica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			int cantidadTurbinas, double capacidadEmbalse) {
-		if (plantas.containsKey(nombre)) {
-			throw new RuntimeException("Ya existe una planta con ese nombre");
-		}
-		if (!esFechaHoraValida(fechaHoraPuestaEnFuncionamiento)) {
-			throw new RuntimeException("La fecha y hora no tienen un formato valido");
-		}
+		
+		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
 		
 		Planta nueva = new Hidraulica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadTurbinas, capacidadEmbalse);
@@ -75,13 +63,8 @@ public class SmartGrids implements ISmartGrids {
 	public void registrarPlantaTermica(String nombre, String direccion, double capacidadMaxima,
 			String fechaHoraPuestaEnFuncionamiento, String tipoCombustible, double objetivoEmisionesCo2PorHora,
 			double capacidadAlmacenamientoCombustible) {
-		if (plantas.containsKey(nombre)) {
-			throw new RuntimeException("Ya existe una planta con ese nombre");
-		}
 		
-		if (!esFechaHoraValida(fechaHoraPuestaEnFuncionamiento)) {
-			throw new RuntimeException("La fecha y hora no tienen un formato valido");
-		}
+		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
 		
 		Planta nueva = new Termica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				tipoCombustible, objetivoEmisionesCo2PorHora, capacidadAlmacenamientoCombustible);
@@ -103,7 +86,7 @@ public class SmartGrids implements ISmartGrids {
 
 	@Override
 	public double capacidadMinimaCuota(String nombre) {
-		if (!plantas.containsKey(nombre)) {
+		if (!existePlanta(nombre)) {
 			throw new RuntimeException("No existe una planta con ese nombre");
 		}
 		Planta planta = plantas.get(nombre);
@@ -112,37 +95,23 @@ public class SmartGrids implements ISmartGrids {
 
 	@Override
 	public void activarPlanta(String nombre, String fechaHora) {
-		if (!plantas.containsKey(nombre)) {
-			throw new RuntimeException("No existe una planta con ese nombre");
-		}
-		if (!esFechaHoraValida(fechaHora)) {
-			throw new RuntimeException("La fecha y hora no tienen un formato valido");
-		}
-		if (estaActiva(nombre)) {
-			throw new RuntimeException("La planta ya esta activa");
-		}
+		validacionesEstadoPlanta(nombre, fechaHora);
+		
 		Planta p = plantas.get(nombre);
 		p.activar(fechaHora);
 	}
 
 	@Override
 	public void desactivarPlanta(String nombre, String fechaHora) {
-		if (!plantas.containsKey(nombre)) {
-			throw new RuntimeException("No existe una planta con ese nombre");
-		}
-		if (!esFechaHoraValida(fechaHora)) {
-			throw new RuntimeException("La fecha y hora no tienen un formato valido");
-		}
-		if (!estaActiva(nombre)) {
-			throw new RuntimeException("La planta ya esta inactiva");
-		}
+		validacionesEstadoPlanta(nombre, fechaHora);
+		
 		Planta p = plantas.get(nombre);
 		p.desactivar(fechaHora);
 	}
 
 	@Override
 	public boolean estaActiva(String nombre) {
-		if (!plantas.containsKey(nombre)) {
+		if (!existePlanta(nombre)) {
 			throw new RuntimeException("No existe una planta con ese nombre");
 		}
 		return plantas.get(nombre).isEstado();
@@ -150,18 +119,7 @@ public class SmartGrids implements ISmartGrids {
 
 	@Override
 	public void registrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias) {
-		if (!plantas.containsKey(nombre)) {
-			throw new RuntimeException("No existe una planta con ese nombre");
-		}
-		if (!esFechaHoraValida(fechaHora)) {
-			throw new RuntimeException("La fecha y hora no tienen un formato valido");
-		}
-		if (!estaActiva(nombre)) {
-			throw new RuntimeException("La planta esta inactiva");
-		}
-		if (energiaGenerada < 0 || incidencias < 0) {
-			throw new RuntimeException("Los datos no pueden ser negativos.");
-		}
+		validacionesRegistrarMonitoreo(nombre, fechaHora, energiaGenerada, incidencias);
 		
 		Planta planta = this.plantas.get(nombre);
 		planta.registrarMonitoreo(fechaHora, energiaGenerada, incidencias);
@@ -170,16 +128,10 @@ public class SmartGrids implements ISmartGrids {
 	@Override
 	public void registrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias,
 			double velocidadViento) {
-		if (!plantas.containsKey(nombre)) {
-			throw new RuntimeException("No existe una planta con ese nombre");
-		}
-		if (!esFechaHoraValida(fechaHora)) {
-			throw new RuntimeException("La fecha y hora no tienen un formato valido");
-		}
-		if (!estaActiva(nombre)) {
-			throw new RuntimeException("La planta esta inactiva");
-		}
-		if (energiaGenerada < 0 || incidencias < 0 || velocidadViento < 0) {
+		
+		validacionesRegistrarMonitoreo(nombre, fechaHora, energiaGenerada, incidencias);
+		
+		if (velocidadViento < 0) {
 			throw new RuntimeException("Los datos no pueden ser negativos.");
 		}
 		if (!(this.plantas.get(nombre) instanceof Eolica)) {
@@ -193,17 +145,10 @@ public class SmartGrids implements ISmartGrids {
 	@Override
 	public void registrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias,
 			double co2Emitido, double combustibleUtilizado) {
-		if (!plantas.containsKey(nombre)) {
-			throw new RuntimeException("No existe una planta con ese nombre");
-		}
-		if (!esFechaHoraValida(fechaHora)) {
-			throw new RuntimeException("La fecha y hora no tienen un formato valido");
-		}
-		if (!estaActiva(nombre)) {
-			throw new RuntimeException("La planta esta inactiva");
-		}
 		
-		if (energiaGenerada < 0 || incidencias < 0 || co2Emitido < 0 || combustibleUtilizado < 0) {
+		validacionesRegistrarMonitoreo(nombre, fechaHora, energiaGenerada, incidencias);
+		
+		if (co2Emitido < 0 || combustibleUtilizado < 0) {
 			throw new RuntimeException("Los datos no pueden ser negativos.");
 		}
 		if (!(this.plantas.get(nombre) instanceof Termica)) {
@@ -285,7 +230,7 @@ public class SmartGrids implements ISmartGrids {
 		return null;
 	}
 	
-	public static boolean esFechaHoraValida(String texto) {
+	protected static boolean esFechaHoraValida(String texto) {
         try {
             LocalDateTime.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             return true;
@@ -294,7 +239,7 @@ public class SmartGrids implements ISmartGrids {
         }
     }
 
-	public static boolean esFechaValida(String texto) {
+	protected static boolean esFechaValida(String texto) {
         try {
             LocalDate.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE);
             return true;
@@ -302,4 +247,43 @@ public class SmartGrids implements ISmartGrids {
             return false;
         }
     }
+	
+	private void validacionesRegistroPlanta(String nombre, String fechaHoraPuestaEnFuncionamiento) {
+		if (existePlanta(nombre)) {
+			throw new RuntimeException("Ya existe una planta con ese nombre");
+		}
+		if (!esFechaHoraValida(fechaHoraPuestaEnFuncionamiento)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+	}
+	
+	private void validacionesEstadoPlanta(String nombre, String fechaHora) {
+		if (!existePlanta(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		if (!esFechaHoraValida(fechaHora)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+		if (estaActiva(nombre)) {
+			throw new RuntimeException("La planta ya esta activa");
+		}
+	}
+	private void validacionesRegistrarMonitoreo(String nombre, String fechaHora, double energiaGenerada, int incidencias) {
+		if (!existePlanta(nombre)) {
+			throw new RuntimeException("No existe una planta con ese nombre");
+		}
+		if (!esFechaHoraValida(fechaHora)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+		if (!estaActiva(nombre)) {
+			throw new RuntimeException("La planta esta inactiva");
+		}
+		if (energiaGenerada < 0 || incidencias < 0) {
+			throw new RuntimeException("Los datos no pueden ser negativos.");
+		}
+	}
+	
+	private boolean existePlanta(String nombre) {
+		return plantas.containsKey(nombre);
+	}
 }
