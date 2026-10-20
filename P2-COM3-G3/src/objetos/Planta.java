@@ -138,5 +138,14 @@ public abstract class Planta {
 		String sp = sb.toString();
 		return sp;
 	}
+	
+	public boolean existeMonitoreoEn(String fechaHora) {
+		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
+		if(monitoreos.containsKey(fechaHoraParseada)) {
+			return true;
+		}
+		//El sistema no acepta registros si esta activada.
+		return false;
+	}
 
 }

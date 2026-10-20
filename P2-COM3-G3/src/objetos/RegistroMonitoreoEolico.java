@@ -11,5 +11,8 @@ public class RegistroMonitoreoEolico extends RegistroMonitoreo {
 		super(nombrePlanta, fecha, incidencias, energiaGenerada);
 		this.velocidadPromedioViento = velocidadPromedioViento;
 	}
-
+	
+	public double getVelocidadPromedioViento() {
+	   return velocidadPromedioViento;
+	}
 }

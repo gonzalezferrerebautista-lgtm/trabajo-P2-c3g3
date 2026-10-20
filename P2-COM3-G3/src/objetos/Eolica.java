@@ -3,6 +3,7 @@ package objetos;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 
 public class Eolica extends PlantaRenovable {
 	private int cantidadAerogeneradores;
@@ -42,6 +43,30 @@ public class Eolica extends PlantaRenovable {
 		}
 		double cuota = getCapacidad() * getEficienciaPromedio();
 		return r.getEnergiaGenerada() >= cuota;
+	}
+	
+	public String horasConPocoViento() {
+	    StringBuilder texto = new StringBuilder();
+	    texto.append("- "+nombre + ": " + velocidadMinViento + "\n");
+	    HashMap<Integer, Double> maximoEnHoras = new HashMap<Integer, Double>();
+	    for(RegistroMonitoreo monitoreo: monitoreos.values()) {
+	    		//Cargo los mejores tiempos por hora.
+	    	    RegistroMonitoreoEolico registro = (RegistroMonitoreoEolico) monitoreo;
+	    		if(maximoEnHoras.containsKey(registro.getFecha().getHour())) {
+	    		     double velocidadMaxima = Math.max(registro.getVelocidadPromedioViento(), maximoEnHoras.get(registro.getFecha().getHour()));
+	    		     maximoEnHoras.put(registro.getFecha().getHour() , velocidadMaxima);
+	    		}
+	    		else {
+	    			 maximoEnHoras.put(registro.getFecha().getHour() , registro.getVelocidadPromedioViento() );
+	    		}
+	    }
+        //Analizo si los mejores tiempos de cada hora cumplen con la velocidad, en caso de que no cumplan se mandan con el mejor resultado.
+	    for(int hora : maximoEnHoras.keySet()) {
+	    	if(maximoEnHoras.get(hora) < velocidadMinViento) {
+	    		texto.append("     "+hora + ": " + maximoEnHoras.get(hora) + " M/S \n");
+	    	}
+	    }
+	    return texto.toString();
 	}
 
 }

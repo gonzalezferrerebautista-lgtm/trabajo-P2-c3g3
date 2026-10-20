@@ -236,10 +236,17 @@ public class SmartGrids implements ISmartGrids {
 
 	}
 
-	@Override
+	@Override //A charlar por el Junit. Se toma el mayor pero en el Junit se pide que halla dos (no entiendo)
 	public String horasSinVelocidadMinimaPorPlantaEolica() {
-		// TODO Auto-generated method stub
-		return null;
+		StringBuilder texto = new StringBuilder();
+	    texto.append("Plantas Eolicas: Horas con poco viento \n");
+	    for(Planta planta: plantas.values()) {
+	    	if(planta instanceof Eolica) {
+	    		Eolica plantaEolica = (Eolica) planta;
+	    		texto.append(plantaEolica.horasConPocoViento() + "\n");
+	    	}
+	    }
+		return texto.toString();
 	}
 
 	@Override
@@ -261,16 +268,51 @@ public class SmartGrids implements ISmartGrids {
 
 	@Override
 	public List<String> plantasOrdenadasPorEnergiaGenerada() {
-		// TODO Auto-generated method stub
-		return null;
+		List<String> lista = new ArrayList<String>();
+		double[] arrayDeEnergia = new double[plantas.size()];
+		String[] arrayDeNombreDePlanta = new String[plantas.size()];
+		int indice = 0;
+		//Cargo los array, para luego unicamente comparar el array de plantas.
+		for(Planta planta : plantas.values()) {
+			arrayDeEnergia[indice] = planta.totalGenerado();
+			arrayDeNombreDePlanta[indice] = planta.getNombre();
+			indice += 1;
+		}
+		//Utilizo metodo bubleShort hasta que no se realize modificacion implementando boolean.
+		indice = 0; //vamos a ir restando uno, pues por cada pasada uno ira a la ultima ubicacion
+		boolean seguir = true;
+		while(seguir) {
+			seguir = false;
+			for(int i = 1; i < arrayDeEnergia.length - indice ; i++) {
+				if(arrayDeEnergia[i-1] > arrayDeEnergia[i]) {
+					seguir = true;
+					double aux1 = arrayDeEnergia[i-1];
+					arrayDeEnergia[i-1] = arrayDeEnergia[i];
+					arrayDeEnergia[i] = aux1;
+					String aux2 = arrayDeNombreDePlanta[i-1];
+					arrayDeNombreDePlanta[i-1] = arrayDeNombreDePlanta[i];
+					arrayDeNombreDePlanta[i] = aux2;
+				}
+			}
+			lista.add(arrayDeNombreDePlanta[arrayDeEnergia.length - indice - 1]+": "+arrayDeEnergia[arrayDeEnergia.length - indice - 1]);
+			indice += 1;
+		}
+		while(indice < arrayDeEnergia.length) {
+			lista.add(arrayDeNombreDePlanta[arrayDeEnergia.length - indice - 1]+ ": " +arrayDeEnergia[arrayDeEnergia.length - indice - 1]);
+			indice += 1;
+		}
+		return lista;
 	}
 
-	@Override // falta verificar por horas
+	@Override // ahi un error en la validaciones de registros.
 	public List<String> plantasInactivasEn(String fechaHora) {
+		if(!esFechaHoraValida(fechaHora)) {
+		   throw new RuntimeException("La fecha no tiene un formato valido");
+		}
 		List<String> plantasInactivas = new ArrayList<>();
-		for (Planta p : plantas.values()) {
-			if (p.isEstado() == false) {
-				plantasInactivas.add(p.getNombre());
+		for (Planta planta : plantas.values()) {
+			if (!planta.existeMonitoreoEn(fechaHora)) {
+				plantasInactivas.add(planta.getNombre());
 			}
 
 		}

@@ -10,7 +10,6 @@ public class CodigoCliente {
 	public static void main(String[] args) {
 		ISmartGrids sistema = new SmartGrids();
 		imprimirEstado("Inicio", sistema);
-
 		System.out.println("\nRegistrando plantas...");
 		sistema.registrarPlantaSolar("Solar Norte", "Ruta 1", 1000, INICIO, "Sol", 0.8, 1500, 12, 10);
 		sistema.registrarPlantaEolica("Eolica Sur", "Ruta 2", 800, INICIO, "Viento", 0.75, 4, 80, 5);
@@ -20,6 +19,7 @@ public class CodigoCliente {
 		sistema.registrarMonitoreo("Solar Norte", HORA_MON_1, 0, 0);
 		sistema.registrarMonitoreo("Solar Norte", HORA_MON_2, 500, 1);
 		sistema.registrarMonitoreo("Eolica Sur", HORA_MON_1, 200, 0, 3);
+		System.out.print(sistema.horasSinVelocidadMinimaPorPlantaEolica());
 		imprimirEstado("A mitad de la simulacion", sistema);
 
 		System.out.println("\nLimpiando monitoreos sin datos...");
@@ -38,7 +38,6 @@ public class CodigoCliente {
 		} catch (Exception e) {
 			System.out.println("Fallo esperado: " + e.getMessage());
 		}
-
 		imprimirEstado("Final", sistema);
 	}
 

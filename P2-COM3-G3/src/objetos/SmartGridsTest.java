@@ -189,7 +189,6 @@ public class SmartGridsTest {
         sistema.registrarMonitoreo("Eolica1", d1_02, 10, 0, 4);
         sistema.registrarMonitoreo("Eolica1", d2_02, 10, 0, 2);
         sistema.registrarMonitoreo("Eolica1", d1_05, 10, 0, 1);
-
         String resultado = sistema.horasSinVelocidadMinimaPorPlantaEolica();
         assertTrue(resultado.contains("Eolica1"));
         assertTrue(resultado.contains("02"));
