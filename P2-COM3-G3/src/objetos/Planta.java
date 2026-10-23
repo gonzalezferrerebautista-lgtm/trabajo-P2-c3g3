@@ -16,7 +16,7 @@ public abstract class Planta {
 	private String fechaInicio;
 	protected HashMap<LocalDateTime, RegistroMonitoreo> monitoreos;
 	protected HashMap<LocalDateTime, Boolean> actividad;
-	private String ultimoRegistro;
+	private String ulitmoCambio;
 
 	public Planta(String nombre, String direccion, double capacidad, boolean estado, String fechaInicio) {
 		this.nombre = nombre;
@@ -26,7 +26,7 @@ public abstract class Planta {
 		this.fechaInicio = fechaInicio;
 		this.monitoreos = new LinkedHashMap<LocalDateTime, RegistroMonitoreo>();
 		this.actividad = new LinkedHashMap<LocalDateTime, Boolean>();
-		this.ultimoRegistro = fechaInicio;
+		this.ulitmoCambio = fechaInicio;
 	}
 
 	public abstract boolean cumpleCuota(String fechaHora);
@@ -50,8 +50,8 @@ public abstract class Planta {
 		if (!estaActivaEn(fechaHoraParseada.toString())) {
 			throw new RuntimeException("La planta no esta activada en esta fecha + hora.");
 		}
-		if (fechaHoraParseada.isAfter(LocalDateTime.parse(ultimoRegistro))) {
-			ultimoRegistro = fechaHora;
+		if (fechaHoraParseada.isAfter(LocalDateTime.parse(ulitmoCambio))) {
+			ulitmoCambio = fechaHora;
 		}
 		RegistroMonitoreo registro = new RegistroMonitoreo(this.nombre, fechaHoraParseada, incidencias,
 				energiaGenerada);
@@ -68,7 +68,7 @@ public abstract class Planta {
 		if (this.estado) {
 			throw new RuntimeException("La planta ya esta activa");
 		}
-		if(fechaHoraParseada.isBefore(LocalDateTime.parse(ultimoRegistro))) {
+		if(fechaHoraParseada.isBefore(LocalDateTime.parse(ulitmoCambio))) {
 			throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores al ultimo registro");
 		}
 		this.estado = true;
@@ -83,7 +83,7 @@ public abstract class Planta {
 		if (!this.estado) {
 			throw new RuntimeException("La planta ya esta inactiva");
 		}
-		if(fechaHoraParseada.isBefore(LocalDateTime.parse(ultimoRegistro))) {
+		if(fechaHoraParseada.isBefore(LocalDateTime.parse(ulitmoCambio))) {
 			throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores al ultimo registro");
 		}
 		this.estado = false;
