@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Iterator;
 
 public class SmartGrids implements ISmartGrids {
@@ -25,8 +26,12 @@ public class SmartGrids implements ISmartGrids {
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			double superficieCubierta, int cantidadPaneles, double horasRadiacionDiaria) {
 
-		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
-
+		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, fuentePrimaria);
+		
+		
+		if (superficieCubierta <= 0 || cantidadPaneles == 0 || horasRadiacionDiaria < 0 ) {
+			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
+		}
 		Planta nueva = new Solar(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadPaneles, superficieCubierta, horasRadiacionDiaria);
 
@@ -39,8 +44,10 @@ public class SmartGrids implements ISmartGrids {
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			int cantidadAerogeneradores, double alturaTorres, double velocidadMinimaViento) {
 
-		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
-
+		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, fuentePrimaria);
+		if (cantidadAerogeneradores < 0 || alturaTorres <= 0 || eficienciaPromedio <= 0 ) {
+			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
+		}
 		Planta nueva = new Eolica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadAerogeneradores, alturaTorres, velocidadMinimaViento);
 
@@ -52,8 +59,10 @@ public class SmartGrids implements ISmartGrids {
 			String fechaHoraPuestaEnFuncionamiento, String fuentePrimaria, double eficienciaPromedio,
 			int cantidadTurbinas, double capacidadEmbalse) {
 
-		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
-
+		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, fuentePrimaria);
+		if (cantidadTurbinas < 0 || capacidadEmbalse <= 0 || eficienciaPromedio <= 0 ) {
+			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
+		}
 		Planta nueva = new Hidraulica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				eficienciaPromedio, fuentePrimaria, cantidadTurbinas, capacidadEmbalse);
 
@@ -65,8 +74,11 @@ public class SmartGrids implements ISmartGrids {
 			String fechaHoraPuestaEnFuncionamiento, String tipoCombustible, double objetivoEmisionesCo2PorHora,
 			double capacidadAlmacenamientoCombustible) {
 
-		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento);
+		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, tipoCombustible);
 
+		if (objetivoEmisionesCo2PorHora <= 0 || capacidadAlmacenamientoCombustible <= 0) {
+			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
+		}
 		Planta nueva = new Termica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
 				tipoCombustible, objetivoEmisionesCo2PorHora, capacidadAlmacenamientoCombustible);
 
@@ -202,7 +214,7 @@ public class SmartGrids implements ISmartGrids {
 	@Override
 	public Map<String, Integer> plantasRenovablesPorFuente() {
 		Map<String, Integer> cantPlantasRenovablesPorFuente;
-		cantPlantasRenovablesPorFuente = new HashMap<>();
+		cantPlantasRenovablesPorFuente = new TreeMap<>();
 		for (Planta p : plantas.values()) {
 			if (p instanceof PlantaRenovable) {
 				PlantaRenovable pr = (PlantaRenovable) p;
@@ -240,7 +252,7 @@ public class SmartGrids implements ISmartGrids {
 
 	}
 
-	@Override //A charlar por el Junit. Se toma el mayor pero en el Junit se pide que halla dos (no entiendo)
+	@Override 
 	public String horasSinVelocidadMinimaPorPlantaEolica() {
 		StringBuilder texto = new StringBuilder();
 	    texto.append("Plantas Eolicas: Horas con poco viento \n");
@@ -250,7 +262,6 @@ public class SmartGrids implements ISmartGrids {
 	    		texto.append(plantaEolica.horasConPocoViento() + "\n");
 	    	}
 	    }
-	    System.out.println(texto.toString());
 		return texto.toString();
 	}
 
@@ -273,40 +284,15 @@ public class SmartGrids implements ISmartGrids {
 
 	@Override
 	public List<String> plantasOrdenadasPorEnergiaGenerada() {
-		List<String> lista = new ArrayList<String>();
-		double[] arrayDeEnergia = new double[plantas.size()];
-		String[] arrayDeNombreDePlanta = new String[plantas.size()];
-		int indice = 0;
-		//Cargo los array, para luego unicamente comparar el array de plantas.
-		for(Planta planta : plantas.values()) {
-			arrayDeEnergia[indice] = planta.totalGenerado();
-			arrayDeNombreDePlanta[indice] = planta.getNombre();
-			indice += 1;
-		}
-		//Utilizo metodo bubleShort hasta que no se realize modificacion implementando boolean.
-		indice = 0; //vamos a ir restando uno, pues por cada pasada uno ira a la ultima ubicacion
-		boolean seguir = true;
-		while(seguir) {
-			seguir = false;
-			for(int i = 1; i < arrayDeEnergia.length - indice ; i++) {
-				if(arrayDeEnergia[i-1] > arrayDeEnergia[i]) {
-					seguir = true;
-					double aux1 = arrayDeEnergia[i-1];
-					arrayDeEnergia[i-1] = arrayDeEnergia[i];
-					arrayDeEnergia[i] = aux1;
-					String aux2 = arrayDeNombreDePlanta[i-1];
-					arrayDeNombreDePlanta[i-1] = arrayDeNombreDePlanta[i];
-					arrayDeNombreDePlanta[i] = aux2;
-				}
-			}
-			lista.add(arrayDeNombreDePlanta[arrayDeEnergia.length - indice - 1]+": "+arrayDeEnergia[arrayDeEnergia.length - indice - 1]);
-			indice += 1;
-		}
-		while(indice < arrayDeEnergia.length) {
-			lista.add(arrayDeNombreDePlanta[arrayDeEnergia.length - indice - 1]+ ": " +arrayDeEnergia[arrayDeEnergia.length - indice - 1]);
-			indice += 1;
-		}
-		return lista;
+	    List<Planta> listaPlantas = new ArrayList<>(plantas.values());
+	    
+	    listaPlantas.sort((p1, p2) -> Double.compare(p2.totalGenerado(), p1.totalGenerado()));
+
+	    List<String> resultado = new ArrayList<>();
+	    for (Planta p : listaPlantas) {
+	        resultado.add(p.getNombre() + ": " + p.totalGenerado());
+	    }
+	    return resultado;
 	}
 
 	@Override 
@@ -342,12 +328,25 @@ public class SmartGrids implements ISmartGrids {
 		}
 	}
 
-	private void validacionesRegistroPlanta(String nombre, String fechaHoraPuestaEnFuncionamiento) {
+	private void validacionesRegistroPlanta(String nombre, String fechaHoraPuestaEnFuncionamiento, String direccion, double capacidadMaxima, String fuentePrimaria) {
 		if (existePlanta(nombre)) {
 			throw new RuntimeException("Ya existe una planta con ese nombre");
 		}
 		if (!esFechaHoraValida(fechaHoraPuestaEnFuncionamiento)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+		
+		if (nombre == null || nombre.length() <= 0) {
+			throw new RuntimeException("El nombre no puede ser vacio o null");
+		}
+		if (direccion == null || direccion.length() <= 0) {
+			throw new RuntimeException("La direccion no puede ser vacio o null");
+		}
+		if (capacidadMaxima <= 0) {
+			throw new RuntimeException("La capacidad no puede ser 0 o negativo.");
+		}
+		if (fuentePrimaria.length() <= 0 || fuentePrimaria == null) {
+			throw new RuntimeException("La fuente primaria o tipo de combustible no puede ser vacio.");
 		}
 	}
 
@@ -380,5 +379,17 @@ public class SmartGrids implements ISmartGrids {
 
 	private boolean existePlanta(String nombre) {
 		return plantas.containsKey(nombre);
+	}
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SMARTGRIDS - SISTEMA DE CONTROL DE PLANTAS\n");
+		if (plantas.isEmpty()) {
+			sb.append("No hay plantas registradas en el sistema");
+		}
+		for (Planta planta : plantas.values()) {
+			sb.append(planta.toString() + "\n");
+		}
+		return sb.toString();
 	}
 }

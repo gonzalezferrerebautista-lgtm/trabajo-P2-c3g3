@@ -17,5 +17,13 @@ public class RegistroMonitoreoTermico extends RegistroMonitoreo {
 	public double getCantidadCO2Generado() {
 		return cantidadCO2Generado;
 	}
-
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(super.toString());
+		sb.append("\n	- Co2 GENERADO: " + cantidadCO2Generado+ " ");
+		sb.append("\n	- COMBUSTIBLE CONSUMIDO: " + cantidadCombustibleConsumido + " ");
+		return sb.toString();
+	}
 }

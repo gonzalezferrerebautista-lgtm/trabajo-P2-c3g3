@@ -15,4 +15,12 @@ public class RegistroMonitoreoEolico extends RegistroMonitoreo {
 	public double getVelocidadPromedioViento() {
 	   return velocidadPromedioViento;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(super.toString());
+		sb.append("\n	- VELOCIDAD PROMEDIO VIENTO: " + velocidadPromedioViento + " ");
+		return sb.toString();
+	}
 }

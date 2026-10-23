@@ -9,6 +9,11 @@ public class Termica extends Planta {
 	private double objetivoEmision;
 	private double capacidadAlmacenamientoCombustible;
 
+	@Override
+	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias) {
+	    throw new RuntimeException("Las plantas eólicas/térmicas requieren datos adicionales.");
+	}
+	
 	public Termica(String nombre, String direccion, double capacidad, boolean estado, String fechaInicio,
 			String tipoCombustible, double objetivoEmision, double capacidadAlmacenamientoCombustible) {
 		super(nombre, direccion, capacidad, estado, fechaInicio);
@@ -37,9 +42,7 @@ public class Termica extends Planta {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
 		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
-		if (monitoreos.containsKey(fechaHoraParseada)) {
-			throw new RuntimeException("Ya hay un monitoreo para esta fecha + hora.");
-		}
+		super.validarRegistroMonitoreo(fechaHoraParseada);
 
 		RegistroMonitoreoTermico registro = new RegistroMonitoreoTermico(nombre, fechaHoraParseada, incidencias,
 				energiaGenerada, co2Emitido, combustibleUtilizado);

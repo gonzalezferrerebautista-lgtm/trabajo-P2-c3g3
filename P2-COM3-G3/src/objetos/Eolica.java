@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 public class Eolica extends PlantaRenovable {
 	private int cantidadAerogeneradores;
@@ -19,14 +20,17 @@ public class Eolica extends PlantaRenovable {
 		this.velocidadMinViento = velocidadMinViento;
 	}
 
+	@Override
+	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias) {
+	    throw new RuntimeException("Las plantas eólicas/térmicas requieren datos adicionales.");
+	}
+	
 	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias, double velocidadViento) {
 		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
 		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
-		if (monitoreos.containsKey(fechaHoraParseada)) {
-			throw new RuntimeException("Ya hay un monitoreo para esta fecha + hora.");
-		}
+		super.validarRegistroMonitoreo(fechaHoraParseada);
 
 		RegistroMonitoreoEolico registro = new RegistroMonitoreoEolico(nombre, fechaHoraParseada, incidencias,
 				energiaGenerada, velocidadViento);
@@ -47,8 +51,8 @@ public class Eolica extends PlantaRenovable {
 	
 	public String horasConPocoViento() {
 	    StringBuilder texto = new StringBuilder();
-	    texto.append("- "+nombre + ": " + velocidadMinViento + "\n");
-	    HashMap<Integer, Double> maximoEnHoras = new HashMap<Integer, Double>();
+	    texto.append("- "+nombre + ": " + velocidadMinViento + " m/s \n");
+	    TreeMap<Integer, Double> maximoEnHoras = new TreeMap<Integer, Double>();
 	    for(RegistroMonitoreo monitoreo: monitoreos.values()) {
 	    		//Cargo los mejores tiempos por hora.
 	    	    RegistroMonitoreoEolico registro = (RegistroMonitoreoEolico) monitoreo;
@@ -69,7 +73,7 @@ public class Eolica extends PlantaRenovable {
 		    	if (horaString.length() == 1) {
 		    		horaString = "0"+horaString;
 		    	}
-	    		texto.append("     "+ horaString + ": " + maximoEnHoras.get(hora) + " M/S \n");
+	    		texto.append("     "+ horaString + ": " + maximoEnHoras.get(hora) + " m/s \n");
 	    	}
 	    }
 	    return texto.toString();

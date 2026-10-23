@@ -31,4 +31,14 @@ public class RegistroMonitoreo {
 	public double getEnergiaGenerada() {
 		return energiaGenerada;
 	}
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(fecha + ": ");
+		sb.append("\n	- INCIDENCIAS: " + incidencias + " ");
+		sb.append("\n	- ENERGIA GENERADA: " + energiaGenerada + " ");
+		
+		return sb.toString();
+	}
 }
