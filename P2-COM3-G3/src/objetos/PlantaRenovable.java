@@ -13,7 +13,7 @@ public abstract class PlantaRenovable extends Planta {
 		this.fuentePrimaria = fuentePrimaria;
 	}
 
-	public abstract boolean cumpleCuota(String fecha, int hora);
+	public abstract boolean cumpleCuota(String fechaHora);
 
 	public double getEficienciaPromedio() {
 		return eficienciaPromedio;

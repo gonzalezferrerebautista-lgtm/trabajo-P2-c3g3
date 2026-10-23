@@ -18,14 +18,16 @@ public class Termica extends Planta {
 	}
 
 	@Override
-	public boolean cumpleCuota(String fecha, int hora) {
-		LocalDateTime clave = LocalDate.parse(fecha).atTime(hora, 0);
+	public boolean cumpleCuota(String fechaHora) {
+		
+		LocalDateTime clave = LocalDateTime.parse(fechaHora);
+		
 		RegistroMonitoreo r = monitoreos.get(clave);
 		if (r == null) {
 			return false;
 		}
 		RegistroMonitoreoTermico rt = (RegistroMonitoreoTermico) r;
-		return rt.getEnergiaGenerada() >= getCapacidad() / 2 && rt.getCantidadCO2Generado() < objetivoEmision;
+		return rt.getEnergiaGenerada() >= (getCapacidad() / 2) && rt.getCantidadCO2Generado() < objetivoEmision;
 
 	}
 

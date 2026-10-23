@@ -15,6 +15,8 @@ public abstract class Planta {
 	private boolean estado;
 	private String fechaInicio;
 	protected HashMap<LocalDateTime, RegistroMonitoreo> monitoreos;
+	protected HashMap<LocalDateTime, Boolean> actividad;
+	private String ultimoRegistro;
 
 	public Planta(String nombre, String direccion, double capacidad, boolean estado, String fechaInicio) {
 		this.nombre = nombre;
@@ -23,9 +25,11 @@ public abstract class Planta {
 		this.estado = estado;
 		this.fechaInicio = fechaInicio;
 		this.monitoreos = new LinkedHashMap<LocalDateTime, RegistroMonitoreo>();
+		this.actividad = new LinkedHashMap<LocalDateTime, Boolean>();
+		this.ultimoRegistro = fechaInicio;
 	}
 
-	public abstract boolean cumpleCuota(String fecha, int hora);
+	public abstract boolean cumpleCuota(String fechaHora);
 
 	public abstract double capacidadMinimaCuota();
 
@@ -34,27 +38,56 @@ public abstract class Planta {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
 		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
+		LocalDateTime fechaHoraInicio = LocalDateTime.parse(fechaInicio).truncatedTo(ChronoUnit.HOURS);
+		
+		
 		if (this.monitoreos.containsKey(fechaHoraParseada)) {
 			throw new RuntimeException("Ya hay un monitoreo para esta fecha + hora.");
+		}
+		if (!fechaHoraParseada.isAfter(fechaHoraInicio)) {
+			throw new RuntimeException("No se puede hacer un registro anterior al ultimo realizado.");
+		}
+		if (!estaActivaEn(fechaHoraParseada.toString())) {
+			throw new RuntimeException("La planta no esta activada en esta fecha + hora.");
+		}
+		if (fechaHoraParseada.isAfter(LocalDateTime.parse(ultimoRegistro))) {
+			ultimoRegistro = fechaHora;
 		}
 		RegistroMonitoreo registro = new RegistroMonitoreo(this.nombre, fechaHoraParseada, incidencias,
 				energiaGenerada);
 		monitoreos.put(fechaHoraParseada, registro);
+		
+		
 
 	}
-
 	public void activar(String fecha) {
+		if (!SmartGrids.esFechaHoraValida(fecha)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fecha).truncatedTo(ChronoUnit.HOURS);
 		if (this.estado) {
 			throw new RuntimeException("La planta ya esta activa");
 		}
+		if(fechaHoraParseada.isBefore(LocalDateTime.parse(ultimoRegistro))) {
+			throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores al ultimo registro");
+		}
 		this.estado = true;
-	}
+		actividad.put(fechaHoraParseada, true);
 
+	}
 	public void desactivar(String fecha) {
+		if (!SmartGrids.esFechaHoraValida(fecha)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
+		}
+		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fecha).truncatedTo(ChronoUnit.HOURS);
 		if (!this.estado) {
 			throw new RuntimeException("La planta ya esta inactiva");
 		}
+		if(fechaHoraParseada.isBefore(LocalDateTime.parse(ultimoRegistro))) {
+			throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores al ultimo registro");
+		}
 		this.estado = false;
+		actividad.put(fechaHoraParseada, false);
 	}
 
 	public double totalGenerado() {
@@ -90,8 +123,7 @@ public abstract class Planta {
 		for (Map.Entry<LocalDateTime, RegistroMonitoreo> entry : monitoreos.entrySet()) {
 			LocalDateTime tiempoRegistro = entry.getKey();
 			if (!tiempoRegistro.toLocalDate().isBefore(desde) && !tiempoRegistro.toLocalDate().isAfter(hasta)) {
-				double generado = entry.getValue().getEnergiaGenerada();
-				if (generado >= capacidadMinimaCuota) {
+				if (cumpleCuota(tiempoRegistro.toString())) {
 					resultado[tiempoRegistro.getHour()] += 1;
 				}
 			}
@@ -139,13 +171,23 @@ public abstract class Planta {
 		return sp;
 	}
 	
-	public boolean existeMonitoreoEn(String fechaHora) {
-		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
-		if(monitoreos.containsKey(fechaHoraParseada)) {
-			return true;
+	public boolean estaActivaEn(String fechaHora) {
+		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
+			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
-		//El sistema no acepta registros si esta activada.
-		return false;
+		
+		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
+		if (actividad.containsKey(fechaHoraParseada)) {
+			return actividad.get(fechaHoraParseada);
+		}
+		boolean resultado = true;
+		
+		for (Map.Entry<LocalDateTime, Boolean> act : actividad.entrySet()) {
+			if (fechaHoraParseada.isAfter(act.getKey())) {
+				resultado = act.getValue();
+			}
+		}
+		return resultado;
 	}
 
 }

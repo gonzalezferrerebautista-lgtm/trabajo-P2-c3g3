@@ -18,8 +18,8 @@ public class Solar extends PlantaRenovable {
 	}
 
 	@Override
-	public boolean cumpleCuota(String fecha, int hora) {
-		LocalDateTime clave = LocalDate.parse(fecha).atTime(hora, 0);
+	public boolean cumpleCuota(String fechaHora) {
+		LocalDateTime clave = LocalDateTime.parse(fechaHora);
 		RegistroMonitoreo r = monitoreos.get(clave);
 		if (r == null) {
 			return false;

@@ -145,12 +145,19 @@ public class SmartGridsTest {
     	String d1_01 = DIA1+"T01:00:00";
     	String d1_02 = DIA1+"T02:00:00";
     	String d1_03 = DIA1+"T03:00:00";
-
+    	//Las termicas deben
+        //* generar la mitad de su capacidad y emitir menos CO2 que el objetivo
+        //* por hora.
+        //*
         sistema.registrarMonitoreo("Termica1", d1_01, 300, 0, 49, 10); // cumple
         sistema.registrarMonitoreo("Termica1", d1_02, 300, 0, 50, 10); // emite de mas
         sistema.registrarMonitoreo("Termica1", d1_03, 299, 0, 1, 10); // genera poco
         int[] hist = sistema.histogramaCumplimiento(
             "Termica1", DIA1, DIA1);
+        for (int i = 0; i < hist.length; i++) {
+        	System.out.println(i + ": " + hist[i]);
+        }
+        
         assertEquals(1, hist[1]);
         assertEquals(0, hist[2]);
         assertEquals(0, hist[3]);
@@ -230,11 +237,10 @@ public class SmartGridsTest {
     public void consultaPlantasInactivasEnUnaFechaHora() {
     	String d1_10 = DIA1+"T10:00:00";
     	String d1_11 = DIA1+"T11:00:00";
- 
     	assertTrue(sistema.plantasInactivasEn(d1_11).isEmpty());
     	
         sistema.desactivarPlanta("Solar1", d1_10);
-
+        
         assertEquals(Collections.singletonList("Solar1"),
                 sistema.plantasInactivasEn(d1_11));
     }

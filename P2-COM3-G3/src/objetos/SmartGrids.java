@@ -97,7 +97,9 @@ public class SmartGrids implements ISmartGrids {
 	@Override
 	public void activarPlanta(String nombre, String fechaHora) {
 		validacionesEstadoPlanta(nombre, fechaHora);
-
+		if (estaActiva(nombre)) {
+			throw new RuntimeException("La planta ya esta activa");
+		}
 		Planta p = plantas.get(nombre);
 		p.activar(fechaHora);
 	}
@@ -105,7 +107,9 @@ public class SmartGrids implements ISmartGrids {
 	@Override
 	public void desactivarPlanta(String nombre, String fechaHora) {
 		validacionesEstadoPlanta(nombre, fechaHora);
-
+		if (!estaActiva(nombre)) {
+			throw new RuntimeException("La planta ya esta inactiva");
+		}
 		Planta p = plantas.get(nombre);
 		p.desactivar(fechaHora);
 	}
@@ -222,9 +226,9 @@ public class SmartGrids implements ISmartGrids {
 		for (Planta p : plantas.values()) {
 			int cumplio = 0;
 			for (LocalDateTime fechaHora : p.getMonitoreos().keySet()) {
-				String fecha = fechaHora.toLocalDate().toString();
-				int hora = fechaHora.getHour();
-				if (p.cumpleCuota(fecha, hora)) {
+				String fecha = fechaHora.toString();
+				
+				if (p.cumpleCuota(fecha)) {
 					cumplio++;
 				}
 			}
@@ -246,6 +250,7 @@ public class SmartGrids implements ISmartGrids {
 	    		texto.append(plantaEolica.horasConPocoViento() + "\n");
 	    	}
 	    }
+	    System.out.println(texto.toString());
 		return texto.toString();
 	}
 
@@ -304,14 +309,14 @@ public class SmartGrids implements ISmartGrids {
 		return lista;
 	}
 
-	@Override // ahi un error en la validaciones de registros.
+	@Override 
 	public List<String> plantasInactivasEn(String fechaHora) {
 		if(!esFechaHoraValida(fechaHora)) {
 		   throw new RuntimeException("La fecha no tiene un formato valido");
 		}
 		List<String> plantasInactivas = new ArrayList<>();
 		for (Planta planta : plantas.values()) {
-			if (!planta.existeMonitoreoEn(fechaHora)) {
+			if (!planta.estaActivaEn(fechaHora)) {
 				plantasInactivas.add(planta.getNombre());
 			}
 
@@ -353,9 +358,7 @@ public class SmartGrids implements ISmartGrids {
 		if (!esFechaHoraValida(fechaHora)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
-		if (estaActiva(nombre)) {
-			throw new RuntimeException("La planta ya esta activa");
-		}
+		
 	}
 
 	private void validacionesRegistrarMonitoreo(String nombre, String fechaHora, double energiaGenerada,
@@ -366,7 +369,8 @@ public class SmartGrids implements ISmartGrids {
 		if (!esFechaHoraValida(fechaHora)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
-		if (!estaActiva(nombre)) {
+		Planta planta = plantas.get(nombre);
+		if (!planta.estaActivaEn(fechaHora)) {
 			throw new RuntimeException("La planta esta inactiva");
 		}
 		if (energiaGenerada < 0 || incidencias < 0) {

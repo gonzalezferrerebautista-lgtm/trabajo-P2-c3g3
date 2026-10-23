@@ -35,8 +35,8 @@ public class Eolica extends PlantaRenovable {
 	}
 
 	@Override
-	public boolean cumpleCuota(String fecha, int hora) {
-		LocalDateTime clave = LocalDate.parse(fecha).atTime(hora, 0);
+	public boolean cumpleCuota(String fechaHora) {
+		LocalDateTime clave = LocalDateTime.parse(fechaHora);
 		RegistroMonitoreo r = monitoreos.get(clave);
 		if (r == null) {
 			return false;
@@ -62,8 +62,14 @@ public class Eolica extends PlantaRenovable {
 	    }
         //Analizo si los mejores tiempos de cada hora cumplen con la velocidad, en caso de que no cumplan se mandan con el mejor resultado.
 	    for(int hora : maximoEnHoras.keySet()) {
+	    	
+	    	
 	    	if(maximoEnHoras.get(hora) < velocidadMinViento) {
-	    		texto.append("     "+hora + ": " + maximoEnHoras.get(hora) + " M/S \n");
+	    		String horaString = Integer.toString(hora);
+		    	if (horaString.length() == 1) {
+		    		horaString = "0"+horaString;
+		    	}
+	    		texto.append("     "+ horaString + ": " + maximoEnHoras.get(hora) + " M/S \n");
 	    	}
 	    }
 	    return texto.toString();
