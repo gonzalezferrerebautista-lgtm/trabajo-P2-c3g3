@@ -29,7 +29,7 @@ public class SmartGrids implements ISmartGrids {
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, fuentePrimaria);
 		
 		
-		if (superficieCubierta <= 0 || cantidadPaneles == 0 || horasRadiacionDiaria < 0 ) {
+		if (eficienciaPromedio <= 0  || superficieCubierta <= 0 || cantidadPaneles <= 0 || horasRadiacionDiaria <= 0 || horasRadiacionDiaria > 24 ) {
 			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
 		}
 		Planta nueva = new Solar(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
@@ -45,7 +45,7 @@ public class SmartGrids implements ISmartGrids {
 			int cantidadAerogeneradores, double alturaTorres, double velocidadMinimaViento) {
 
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, fuentePrimaria);
-		if (cantidadAerogeneradores < 0 || alturaTorres <= 0 || eficienciaPromedio <= 0 ) {
+		if (cantidadAerogeneradores <= 0 || alturaTorres <= 0 || eficienciaPromedio <= 0 || velocidadMinimaViento <= 0) {
 			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
 		}
 		Planta nueva = new Eolica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
@@ -60,7 +60,7 @@ public class SmartGrids implements ISmartGrids {
 			int cantidadTurbinas, double capacidadEmbalse) {
 
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, fuentePrimaria);
-		if (cantidadTurbinas < 0 || capacidadEmbalse <= 0 || eficienciaPromedio <= 0 ) {
+		if (cantidadTurbinas <= 0 || capacidadEmbalse <= 0 || eficienciaPromedio <= 0 ) {
 			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
 		}
 		Planta nueva = new Hidraulica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
@@ -207,7 +207,7 @@ public class SmartGrids implements ISmartGrids {
 			throw new RuntimeException("fechaDesde es posterior a fechaHasta");
 		}
 
-		return plantas.get(nombre).histogramaCumplimiento(nombre, fechaDesde, fechaHasta);
+		return plantas.get(nombre).histogramaCumplimiento(fechaDesde, fechaHasta);
 
 	}
 
@@ -311,6 +311,7 @@ public class SmartGrids implements ISmartGrids {
 	}
 
 	protected static boolean esFechaHoraValida(String texto) {
+		if (texto == null) return false;
 		try {
 			LocalDateTime.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 			return true;
@@ -320,6 +321,7 @@ public class SmartGrids implements ISmartGrids {
 	}
 
 	protected static boolean esFechaValida(String texto) {
+		if (texto == null) return false;
 		try {
 			LocalDate.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE);
 			return true;
@@ -345,7 +347,7 @@ public class SmartGrids implements ISmartGrids {
 		if (capacidadMaxima <= 0) {
 			throw new RuntimeException("La capacidad no puede ser 0 o negativo.");
 		}
-		if (fuentePrimaria.length() <= 0 || fuentePrimaria == null) {
+		if (fuentePrimaria == null || fuentePrimaria.isEmpty() || fuentePrimaria.length() <= 0) {
 			throw new RuntimeException("La fuente primaria o tipo de combustible no puede ser vacio.");
 		}
 	}
@@ -388,7 +390,7 @@ public class SmartGrids implements ISmartGrids {
 			sb.append("No hay plantas registradas en el sistema");
 		}
 		for (Planta planta : plantas.values()) {
-			sb.append(planta.toString() + "\n");
+			sb.append(planta.toString()).append("\n");
 		}
 		return sb.toString();
 	}

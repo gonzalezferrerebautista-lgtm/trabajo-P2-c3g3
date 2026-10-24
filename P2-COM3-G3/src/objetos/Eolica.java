@@ -37,21 +37,10 @@ public class Eolica extends PlantaRenovable {
 		monitoreos.put(fechaHoraParseada, registro);
 
 	}
-
-	@Override
-	public boolean cumpleCuota(String fechaHora) {
-		LocalDateTime clave = LocalDateTime.parse(fechaHora);
-		RegistroMonitoreo r = monitoreos.get(clave);
-		if (r == null) {
-			return false;
-		}
-		double cuota = getCapacidad() * getEficienciaPromedio();
-		return r.getEnergiaGenerada() >= cuota;
-	}
 	
 	public String horasConPocoViento() {
 	    StringBuilder texto = new StringBuilder();
-	    texto.append("- "+nombre + ": " + velocidadMinViento + " m/s \n");
+	    texto.append("- ").append(nombre).append(": ").append(velocidadMinViento).append(" m/s \n");
 	    TreeMap<Integer, Double> maximoEnHoras = new TreeMap<Integer, Double>();
 	    for(RegistroMonitoreo monitoreo: monitoreos.values()) {
 	    		//Cargo los mejores tiempos por hora.

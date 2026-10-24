@@ -14,15 +14,4 @@ public class Hidraulica extends PlantaRenovable {
 		this.capacidadEmbalse = capacidadEmbalse;
 	}
 
-	@Override
-	public boolean cumpleCuota(String fechaHora) {
-		LocalDateTime clave = LocalDateTime.parse(fechaHora);
-		RegistroMonitoreo r = monitoreos.get(clave);
-		if (r == null) {
-			return false;
-		}
-		double cuota = getCapacidad() * getEficienciaPromedio();
-		return r.getEnergiaGenerada() >= cuota;
-	}
-
 }

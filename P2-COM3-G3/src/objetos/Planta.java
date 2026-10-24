@@ -17,7 +17,7 @@ public abstract class Planta {
 	private String fechaInicio;
 	protected HashMap<LocalDateTime, RegistroMonitoreo> monitoreos;
 	protected TreeMap<LocalDateTime, Boolean> actividad;
-	private String ultimoCambio;
+	private LocalDateTime ultimoCambio;
 
 	public Planta(String nombre, String direccion, double capacidad, boolean estado, String fechaInicio) {
 		this.nombre = nombre;
@@ -27,7 +27,7 @@ public abstract class Planta {
 		this.fechaInicio = fechaInicio;
 		this.monitoreos = new LinkedHashMap<LocalDateTime, RegistroMonitoreo>();
 		this.actividad = new TreeMap<LocalDateTime, Boolean>();
-		this.ultimoCambio = fechaInicio;
+		this.ultimoCambio = LocalDateTime.parse(fechaInicio).truncatedTo(ChronoUnit.HOURS);;
 	}
 
 	public abstract boolean cumpleCuota(String fechaHora);
@@ -43,7 +43,9 @@ public abstract class Planta {
 		RegistroMonitoreo registro = new RegistroMonitoreo(this.nombre, fechaHoraParseada, incidencias,
 				energiaGenerada);
 		monitoreos.put(fechaHoraParseada, registro);
-		
+		if (fechaHoraParseada.isAfter(ultimoCambio)) {
+			ultimoCambio = fechaHoraParseada;
+		}
 		
 
 	}
@@ -58,9 +60,7 @@ public abstract class Planta {
 		if (!estaActivaEn(fechaHoraParseada.toString())) {
 			throw new RuntimeException("La planta no esta activada en esta fecha + hora.");
 		}
-		if (fechaHoraParseada.isAfter(LocalDateTime.parse(ultimoCambio))) {
-			ultimoCambio = fechaHoraParseada.toString();
-		}
+		
 		
 	}
 
@@ -72,11 +72,12 @@ public abstract class Planta {
 		if (this.estado) {
 			throw new RuntimeException("La planta ya esta activa");
 		}
-		if(fechaHoraParseada.isBefore(LocalDateTime.parse(ultimoCambio))) {
+		if(fechaHoraParseada.isBefore(ultimoCambio)) {
 			throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores al ultimo registro");
 		}
 		this.estado = true;
 		actividad.put(fechaHoraParseada, true);
+		ultimoCambio = fechaHoraParseada;
 
 	}
 	public void desactivar(String fecha) {
@@ -87,11 +88,12 @@ public abstract class Planta {
 		if (!this.estado) {
 			throw new RuntimeException("La planta ya esta inactiva");
 		}
-		if(fechaHoraParseada.isBefore(LocalDateTime.parse(ultimoCambio))) {
+		if(fechaHoraParseada.isBefore(ultimoCambio)) {
 			throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores al ultimo registro");
 		}
 		this.estado = false;
 		actividad.put(fechaHoraParseada, false);
+		ultimoCambio = fechaHoraParseada;
 	}
 
 	public double totalGenerado() {
@@ -115,10 +117,9 @@ public abstract class Planta {
 		return resultado;
 	}
 
-	public int[] histogramaCumplimiento(String nombre, String fechaDesde, String fechaHasta) {
+	public int[] histogramaCumplimiento(String fechaDesde, String fechaHasta) {
 		LocalDate desde = LocalDate.parse(fechaDesde);
 		LocalDate hasta = LocalDate.parse(fechaHasta);
-		double capacidadMinimaCuota = capacidadMinimaCuota();
 		int[] resultado = new int[24];
 
 		for (Map.Entry<LocalDateTime, RegistroMonitoreo> entry : monitoreos.entrySet()) {
@@ -158,7 +159,7 @@ public abstract class Planta {
 		sb.append(this.getDetalle());
 		if (!this.monitoreos.isEmpty()) {
 			for (RegistroMonitoreo monitoreo : this.monitoreos.values()) {
-				sb.append("\n	• " + monitoreo.toString());
+				sb.append("\n	• ").append(monitoreo.toString());
 			}
 		}
 		return sb.toString();
@@ -170,7 +171,7 @@ public abstract class Planta {
 
 	public String getDetalle() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(this.nombre + " ");
+		sb.append(this.nombre).append(" ");
 		sb.append(this.estado ? "(ACTIVA): " : "(INACTIVA): ");
 		sb.append(this.fechaInicio);
 

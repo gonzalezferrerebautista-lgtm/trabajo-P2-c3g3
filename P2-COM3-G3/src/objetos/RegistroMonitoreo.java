@@ -36,8 +36,8 @@ public class RegistroMonitoreo {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append(fecha + ": ");
-		sb.append("\n	- INCIDENCIAS: " + incidencias + " ");
-		sb.append("\n	- ENERGIA GENERADA: " + energiaGenerada + " ");
+		sb.append("\n	- INCIDENCIAS: ").append(incidencias).append(" ");
+		sb.append("\n	- ENERGIA GENERADA: ").append(energiaGenerada).append(" ");
 		
 		return sb.toString();
 	}

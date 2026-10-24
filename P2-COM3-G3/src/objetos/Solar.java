@@ -17,17 +17,6 @@ public class Solar extends PlantaRenovable {
 		this.horasRadiacion = horasRadiacion;
 	}
 
-	@Override
-	public boolean cumpleCuota(String fechaHora) {
-		LocalDateTime clave = LocalDateTime.parse(fechaHora);
-		RegistroMonitoreo r = monitoreos.get(clave);
-		if (r == null) {
-			return false;
-		}
-		double cuota = getCapacidad() * getEficienciaPromedio() * horasRadiacion / 24;
-		return r.getEnergiaGenerada() >= cuota;
-	}
-
 	public int getCantidadPanelesInstalados() {
 		return cantidadPanelesInstalados;
 	}
