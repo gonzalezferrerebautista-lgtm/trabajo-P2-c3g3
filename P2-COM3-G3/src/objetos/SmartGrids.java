@@ -29,7 +29,8 @@ public class SmartGrids implements ISmartGrids {
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, fuentePrimaria);
 		
 		
-		if (eficienciaPromedio <= 0  || superficieCubierta <= 0 || cantidadPaneles <= 0 || horasRadiacionDiaria <= 0 || horasRadiacionDiaria > 24 ) {
+		if (!esPositivoFinito(eficienciaPromedio) || !esPositivoFinito(superficieCubierta) 
+		        || cantidadPaneles <= 0 || !esPositivoFinito(horasRadiacionDiaria) || horasRadiacionDiaria > 24) {
 			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
 		}
 		Planta nueva = new Solar(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
@@ -45,7 +46,7 @@ public class SmartGrids implements ISmartGrids {
 			int cantidadAerogeneradores, double alturaTorres, double velocidadMinimaViento) {
 
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, fuentePrimaria);
-		if (cantidadAerogeneradores <= 0 || alturaTorres <= 0 || eficienciaPromedio <= 0 || velocidadMinimaViento <= 0) {
+		if (cantidadAerogeneradores <= 0 || !esPositivoFinito(alturaTorres) || !esPositivoFinito(eficienciaPromedio) || !esPositivoFinito(velocidadMinimaViento)) {
 			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
 		}
 		Planta nueva = new Eolica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
@@ -60,7 +61,7 @@ public class SmartGrids implements ISmartGrids {
 			int cantidadTurbinas, double capacidadEmbalse) {
 
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, fuentePrimaria);
-		if (cantidadTurbinas <= 0 || capacidadEmbalse <= 0 || eficienciaPromedio <= 0 ) {
+		if (cantidadTurbinas <= 0 || !esPositivoFinito(capacidadEmbalse) || !esPositivoFinito(eficienciaPromedio)) {
 			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
 		}
 		Planta nueva = new Hidraulica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
@@ -76,7 +77,7 @@ public class SmartGrids implements ISmartGrids {
 
 		validacionesRegistroPlanta(nombre, fechaHoraPuestaEnFuncionamiento, direccion, capacidadMaxima, tipoCombustible);
 
-		if (objetivoEmisionesCo2PorHora <= 0 || capacidadAlmacenamientoCombustible <= 0) {
+		if (!esPositivoFinito(objetivoEmisionesCo2PorHora)|| !esPositivoFinito(capacidadAlmacenamientoCombustible)) {
 			throw new RuntimeException("Los datos no pueden ser 0 o negativo.");
 		}
 		Planta nueva = new Termica(nombre, direccion, capacidadMaxima, true, fechaHoraPuestaEnFuncionamiento,
@@ -148,15 +149,11 @@ public class SmartGrids implements ISmartGrids {
 
 		validacionesRegistrarMonitoreo(nombre, fechaHora, energiaGenerada, incidencias);
 
-		if (velocidadViento < 0) {
+		if (!esNoNegativoFinito(velocidadViento)) {
 			throw new RuntimeException("Los datos no pueden ser negativos.");
 		}
-		if (!(this.plantas.get(nombre) instanceof Eolica)) {
-			throw new RuntimeException("No existe una planta eolica con ese nombre");
-		}
 
-		Eolica planta = (Eolica) this.plantas.get(nombre);
-		planta.registrarMonitoreo(fechaHora, energiaGenerada, incidencias, velocidadViento);
+		this.plantas.get(nombre).registrarMonitoreo(fechaHora, energiaGenerada, incidencias, velocidadViento);
 	}
 
 	@Override
@@ -165,15 +162,11 @@ public class SmartGrids implements ISmartGrids {
 
 		validacionesRegistrarMonitoreo(nombre, fechaHora, energiaGenerada, incidencias);
 
-		if (co2Emitido < 0 || combustibleUtilizado < 0) {
+		if (!esNoNegativoFinito(co2Emitido)|| !esNoNegativoFinito(combustibleUtilizado)) {
 			throw new RuntimeException("Los datos no pueden ser negativos.");
 		}
-		if (!(this.plantas.get(nombre) instanceof Termica)) {
-			throw new RuntimeException("No existe una planta con ese nombre");
-		}
 
-		Termica planta = (Termica) this.plantas.get(nombre);
-		planta.registrarMonitoreo(fechaHora, energiaGenerada, incidencias, co2Emitido, combustibleUtilizado);
+		this.plantas.get(nombre).registrarMonitoreo(fechaHora, energiaGenerada, incidencias, co2Emitido, combustibleUtilizado);
 
 	}
 
@@ -216,17 +209,9 @@ public class SmartGrids implements ISmartGrids {
 		Map<String, Integer> cantPlantasRenovablesPorFuente;
 		cantPlantasRenovablesPorFuente = new TreeMap<>();
 		for (Planta p : plantas.values()) {
-			if (p instanceof PlantaRenovable) {
-				PlantaRenovable pr = (PlantaRenovable) p;
-				String fuente = pr.getFuentePrimaria();
-				if (cantPlantasRenovablesPorFuente.containsKey(fuente)) {
-					int cantActual = cantPlantasRenovablesPorFuente.get(fuente);
-					cantPlantasRenovablesPorFuente.put(fuente, cantActual + 1);
-				} else {
-					cantPlantasRenovablesPorFuente.put(fuente, 1);
-				}
-
-			}
+			
+			p.registrarFuenteSiEsRenovable(cantPlantasRenovablesPorFuente);
+			
 		}
 		return cantPlantasRenovablesPorFuente;
 
@@ -234,33 +219,21 @@ public class SmartGrids implements ISmartGrids {
 
 	@Override
 	public List<String> plantasQueNuncaCumplieronCuota() {
-		List<String> plantasQueNuncaCumplieronCuota = new ArrayList<>();
-		for (Planta p : plantas.values()) {
-			int cumplio = 0;
-			for (LocalDateTime fechaHora : p.getMonitoreos().keySet()) {
-				String fecha = fechaHora.toString();
-				
-				if (p.cumpleCuota(fecha)) {
-					cumplio++;
-				}
-			}
-			if (cumplio == 0) {
-				plantasQueNuncaCumplieronCuota.add(p.getNombre());
-			}
-		}
-		return plantasQueNuncaCumplieronCuota;
-
+	    List<String> plantasQueNuncaCumplieronCuota = new ArrayList<>();
+	    for (Planta p : plantas.values()) {
+	        if (p.nuncaCumplioCuota()) {
+	            plantasQueNuncaCumplieronCuota.add(p.getNombre());
+	        }
+	    }
+	    return plantasQueNuncaCumplieronCuota;
 	}
 
 	@Override 
 	public String horasSinVelocidadMinimaPorPlantaEolica() {
 		StringBuilder texto = new StringBuilder();
 	    texto.append("Plantas Eolicas: Horas con poco viento \n");
-	    for(Planta planta: plantas.values()) {
-	    	if(planta instanceof Eolica) {
-	    		Eolica plantaEolica = (Eolica) planta;
-	    		texto.append(plantaEolica.horasConPocoViento() + "\n");
-	    	}
+	    for(Planta planta: plantas.values()) {    	
+	    	texto.append(planta.reportePocoViento());
 	    }
 		return texto.toString();
 	}
@@ -269,14 +242,7 @@ public class SmartGrids implements ISmartGrids {
 	public int limpiarMonitoreosSinDatos() {
 		int cantBorrados = 0;
 		for (Planta p : plantas.values()) {
-			Iterator<RegistroMonitoreo> iterator = p.getMonitoreos().values().iterator();
-			while (iterator.hasNext()) {
-				RegistroMonitoreo r = iterator.next();
-				if (r.getEnergiaGenerada() == 0 && r.getIncidencias() == 0) {
-					iterator.remove();
-					cantBorrados++;
-				}
-			}
+			cantBorrados+= p.limpiarMonitoreosSinDatos();
 
 		}
 		return cantBorrados;
@@ -329,6 +295,13 @@ public class SmartGrids implements ISmartGrids {
 			return false;
 		}
 	}
+	private static boolean esPositivoFinito(double valor) {
+        return Double.isFinite(valor) && valor > 0;
+    }
+
+    private static boolean esNoNegativoFinito(double valor) {
+        return Double.isFinite(valor) && valor >= 0;
+    }
 
 	private void validacionesRegistroPlanta(String nombre, String fechaHoraPuestaEnFuncionamiento, String direccion, double capacidadMaxima, String fuentePrimaria) {
 		if (existePlanta(nombre)) {
@@ -344,7 +317,7 @@ public class SmartGrids implements ISmartGrids {
 		if (direccion == null || direccion.length() <= 0) {
 			throw new RuntimeException("La direccion no puede ser vacio o null");
 		}
-		if (capacidadMaxima <= 0) {
+		if (!esPositivoFinito(capacidadMaxima)) {
 			throw new RuntimeException("La capacidad no puede ser 0 o negativo.");
 		}
 		if (fuentePrimaria == null || fuentePrimaria.isEmpty() || fuentePrimaria.length() <= 0) {
@@ -374,7 +347,7 @@ public class SmartGrids implements ISmartGrids {
 		if (!planta.estaActivaEn(fechaHora)) {
 			throw new RuntimeException("La planta esta inactiva");
 		}
-		if (energiaGenerada < 0 || incidencias < 0) {
+		if (!esNoNegativoFinito(energiaGenerada)  || incidencias < 0) {
 			throw new RuntimeException("Los datos no pueden ser negativos.");
 		}
 	}

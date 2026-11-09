@@ -27,7 +27,7 @@ public class Termica extends Planta {
 		
 		LocalDateTime clave = LocalDateTime.parse(fechaHora);
 		
-		RegistroMonitoreo r = monitoreos.get(clave);
+		RegistroMonitoreo r = obtenerMonitoreo(clave);
 		if (r == null) {
 			return false;
 		}
@@ -41,13 +41,13 @@ public class Termica extends Planta {
 		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
-		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
-		super.validarRegistroMonitoreo(fechaHoraParseada);
+		LocalDateTime fechaHoraOriginal = LocalDateTime.parse(fechaHora);
+		LocalDateTime fechaHoraTruncada = fechaHoraOriginal.truncatedTo(ChronoUnit.HOURS);
+		super.validarRegistroMonitoreo(fechaHoraOriginal, fechaHoraTruncada);
 
-		RegistroMonitoreoTermico registro = new RegistroMonitoreoTermico(nombre, fechaHoraParseada, incidencias,
+		RegistroMonitoreoTermico registro = new RegistroMonitoreoTermico(nombre, fechaHoraTruncada, incidencias,
 				energiaGenerada, co2Emitido, combustibleUtilizado);
-		monitoreos.put(fechaHoraParseada, registro);
-
+		guardarMonitoreo(fechaHoraOriginal, fechaHoraTruncada, registro);
 	}
 
 	public String getTipoCombustible() {

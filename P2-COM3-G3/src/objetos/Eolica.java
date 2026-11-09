@@ -29,20 +29,26 @@ public class Eolica extends PlantaRenovable {
 		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
-		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
-		super.validarRegistroMonitoreo(fechaHoraParseada);
+		LocalDateTime fechaHoraOriginal = LocalDateTime.parse(fechaHora);
+		LocalDateTime fechaHoraTruncada = fechaHoraOriginal.truncatedTo(ChronoUnit.HOURS);
+		super.validarRegistroMonitoreo(fechaHoraOriginal, fechaHoraTruncada);
 
-		RegistroMonitoreoEolico registro = new RegistroMonitoreoEolico(nombre, fechaHoraParseada, incidencias,
+		RegistroMonitoreoEolico registro = new RegistroMonitoreoEolico(nombre, fechaHoraTruncada, incidencias,
 				energiaGenerada, velocidadViento);
-		monitoreos.put(fechaHoraParseada, registro);
-
+		guardarMonitoreo(fechaHoraOriginal, fechaHoraTruncada, registro);
 	}
+	
+	@Override
+	public String reportePocoViento() {
+		return horasConPocoViento() + "\n";
+	}
+	
 	
 	public String horasConPocoViento() {
 	    StringBuilder texto = new StringBuilder();
 	    texto.append("- ").append(nombre).append(": ").append(velocidadMinViento).append(" m/s \n");
 	    TreeMap<Integer, Double> maximoEnHoras = new TreeMap<Integer, Double>();
-	    for(RegistroMonitoreo monitoreo: monitoreos.values()) {
+	    for(RegistroMonitoreo monitoreo: obtenerMonitoreos()) {
 	    		//Cargo los mejores tiempos por hora.
 	    	    RegistroMonitoreoEolico registro = (RegistroMonitoreoEolico) monitoreo;
 	    		if(maximoEnHoras.containsKey(registro.getFecha().getHour())) {

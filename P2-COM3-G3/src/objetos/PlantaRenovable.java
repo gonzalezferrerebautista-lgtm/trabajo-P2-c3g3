@@ -2,6 +2,7 @@ package objetos;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public abstract class PlantaRenovable extends Planta {
 	private double eficienciaPromedio;
@@ -16,7 +17,7 @@ public abstract class PlantaRenovable extends Planta {
 
 	public boolean cumpleCuota(String fechaHora) {
 		LocalDateTime clave = LocalDateTime.parse(fechaHora);
-		RegistroMonitoreo r = monitoreos.get(clave);
+		RegistroMonitoreo r = obtenerMonitoreo(clave);
 		if (r == null) {
 			return false;
 		}
@@ -35,5 +36,10 @@ public abstract class PlantaRenovable extends Planta {
 	public double capacidadMinimaCuota() {
 		return super.getCapacidad() * eficienciaPromedio;
 	}
+	
+	@Override
+    public void registrarFuenteSiEsRenovable(Map<String, Integer> fuentePorPlanta) {
+        fuentePorPlanta.put(fuentePrimaria, fuentePorPlanta.getOrDefault(fuentePrimaria, 0) + 1);
+    }
 
 }

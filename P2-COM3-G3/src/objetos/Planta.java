@@ -3,8 +3,10 @@ package objetos;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -15,8 +17,8 @@ public abstract class Planta {
 	private double capacidad;
 	private boolean estado;
 	private String fechaInicio;
-	protected HashMap<LocalDateTime, RegistroMonitoreo> monitoreos;
-	protected TreeMap<LocalDateTime, Boolean> actividad;
+	private HashMap<LocalDateTime, RegistroMonitoreo> monitoreos;
+	private LinkedHashMap<LocalDateTime, Boolean> actividad;
 	private LocalDateTime ultimoCambio;
 
 	public Planta(String nombre, String direccion, double capacidad, boolean estado, String fechaInicio) {
@@ -26,8 +28,9 @@ public abstract class Planta {
 		this.estado = estado;
 		this.fechaInicio = fechaInicio;
 		this.monitoreos = new LinkedHashMap<LocalDateTime, RegistroMonitoreo>();
-		this.actividad = new TreeMap<LocalDateTime, Boolean>();
-		this.ultimoCambio = LocalDateTime.parse(fechaInicio).truncatedTo(ChronoUnit.HOURS);;
+		this.actividad = new LinkedHashMap<LocalDateTime, Boolean>();
+		this.ultimoCambio = LocalDateTime.parse(fechaInicio);
+		this.actividad.put(this.ultimoCambio, this.estado);
 	}
 
 	public abstract boolean cumpleCuota(String fechaHora);
@@ -38,37 +41,46 @@ public abstract class Planta {
 		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
-		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
-		validarRegistroMonitoreo(fechaHoraParseada);
-		RegistroMonitoreo registro = new RegistroMonitoreo(this.nombre, fechaHoraParseada, incidencias,
+		LocalDateTime fechaHoraOriginal = LocalDateTime.parse(fechaHora);
+		LocalDateTime fechaHoraTruncada = fechaHoraOriginal.truncatedTo(ChronoUnit.HOURS);
+		validarRegistroMonitoreo(fechaHoraOriginal, fechaHoraTruncada);
+		RegistroMonitoreo registro = new RegistroMonitoreo(this.nombre, fechaHoraTruncada, incidencias,
 				energiaGenerada);
-		monitoreos.put(fechaHoraParseada, registro);
-		if (fechaHoraParseada.isAfter(ultimoCambio)) {
-			ultimoCambio = fechaHoraParseada;
-		}
-		
+		guardarMonitoreo(fechaHoraOriginal, fechaHoraTruncada, registro);
 
 	}
-	protected void validarRegistroMonitoreo(LocalDateTime fechaHoraParseada) {
-		LocalDateTime fechaHoraInicio = LocalDateTime.parse(fechaInicio).truncatedTo(ChronoUnit.HOURS);
-		if (this.monitoreos.containsKey(fechaHoraParseada)) {
-			throw new RuntimeException("Ya hay un monitoreo para esta fecha + hora.");
-		}
-		if (fechaHoraParseada.isBefore(fechaHoraInicio)) {
-			throw new RuntimeException("No se puede hacer un registro anterior al ultimo realizado.");
-		}
-		if (!estaActivaEn(fechaHoraParseada.toString())) {
-			throw new RuntimeException("La planta no esta activada en esta fecha + hora.");
-		}
+	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias, double velocidadViento) {
+        throw new RuntimeException("Este tipo de planta no admite monitoreo eolico.");
+    }
+
+    public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias, double co2Emitido, double combustibleUtilizado) {
+        throw new RuntimeException("Este tipo de planta no admite monitoreo termico.");
+    }
+    
+	protected void validarRegistroMonitoreo(LocalDateTime fechaHoraParseada, LocalDateTime fechaHoraTruncada) {
+		LocalDateTime fechaHoraInicio = LocalDateTime.parse(fechaInicio);
+	    if (this.monitoreos.containsKey(fechaHoraTruncada)) {
+	        throw new RuntimeException("Ya hay un monitoreo para esta fecha + hora.");
+	    }
+	    if (fechaHoraParseada.isBefore(fechaHoraInicio)) {
+	        throw new RuntimeException("No se puede hacer un registro anterior a la puesta en marcha.");
+	    }
+	    if (!estaActivaEn(fechaHoraParseada.toString())) {
+	        throw new RuntimeException("La planta no esta activada en esta fecha + hora.");
+	    }
 		
 		
 	}
 
+	public String reportePocoViento() {
+		return "";
+	}
+	
 	public void activar(String fecha) {
 		if (!SmartGrids.esFechaHoraValida(fecha)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
-		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fecha).truncatedTo(ChronoUnit.HOURS);
+		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fecha);
 		if (this.estado) {
 			throw new RuntimeException("La planta ya esta activa");
 		}
@@ -84,7 +96,7 @@ public abstract class Planta {
 		if (!SmartGrids.esFechaHoraValida(fecha)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
-		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fecha).truncatedTo(ChronoUnit.HOURS);
+		LocalDateTime fechaHoraParseada = LocalDateTime.parse(fecha);
 		if (!this.estado) {
 			throw new RuntimeException("La planta ya esta inactiva");
 		}
@@ -132,7 +144,28 @@ public abstract class Planta {
 		}
 		return resultado;
 	}
+	public boolean nuncaCumplioCuota() {
+        for (LocalDateTime fechaHora : monitoreos.keySet()) {
+            if (cumpleCuota(fechaHora.toString())) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+	public int limpiarMonitoreosSinDatos() {
+        int borrados = 0;
+        Iterator<RegistroMonitoreo> it = monitoreos.values().iterator();
+        while (it.hasNext()) {
+            RegistroMonitoreo r = it.next();
+            if (r.getEnergiaGenerada() == 0 && r.getIncidencias() == 0) {
+                it.remove();
+                borrados++;
+            }
+        }
+        return borrados;
+    }
+	
 	public String getNombre() {
 		return nombre;
 	}
@@ -165,10 +198,6 @@ public abstract class Planta {
 		return sb.toString();
 	}
 
-	public HashMap<LocalDateTime, RegistroMonitoreo> getMonitoreos() {
-		return monitoreos;
-	}
-
 	public String getDetalle() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.nombre).append(" ");
@@ -178,18 +207,40 @@ public abstract class Planta {
 		String sp = sb.toString();
 		return sp;
 	}
-	
+	public void registrarFuenteSiEsRenovable(Map<String, Integer> fuentePorPlanta) {
+		return;
+    }
 	public boolean estaActivaEn(String fechaHora) {
 		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
-		// Lo que hace floorEntry es buscar la ultima entrada de actividad anterior o igual a la fecha que se le está pasando.
-		LocalDateTime fecha = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
-	    Map.Entry<LocalDateTime, Boolean> entry = actividad.floorEntry(fecha);
-	    if (entry != null) {
-	        return entry.getValue();
-	    }
-	    return true; // Aca asumí que si no hay registro de actividad, siempre fue activo (porque la planta se inicia en true)
+	
+		LocalDateTime fecha = LocalDateTime.parse(fechaHora);
+        boolean activaEnFecha = false;
+        for (Map.Entry<LocalDateTime, Boolean> entry : actividad.entrySet()) {
+            if (!entry.getKey().isAfter(fecha)) {
+                activaEnFecha = entry.getValue();
+            } else {
+                break;
+            }
+        }
+        return activaEnFecha;
 	}
+
+	protected void guardarMonitoreo(LocalDateTime fechaHoraOriginal, LocalDateTime fechaHoraTruncada, RegistroMonitoreo registro) {
+		monitoreos.put(fechaHoraTruncada, registro);
+		
+		if (fechaHoraOriginal.isAfter(ultimoCambio)) {
+			ultimoCambio = fechaHoraOriginal;
+		}
+	}
+	protected RegistroMonitoreo obtenerMonitoreo(LocalDateTime fechaTruncada) {
+		return this.monitoreos.get(fechaTruncada);
+	}
+	
+	protected Collection<RegistroMonitoreo> obtenerMonitoreos() {
+		return Collections.unmodifiableCollection(monitoreos.values());
+	}
+	
 
 }
