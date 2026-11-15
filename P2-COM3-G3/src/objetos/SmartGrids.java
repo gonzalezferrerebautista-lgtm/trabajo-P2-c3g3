@@ -15,7 +15,7 @@ import java.util.Iterator;
 
 public class SmartGrids implements ISmartGrids {
 
-	private HashMap<String, Planta> plantas;
+	private LinkedHashMap<String, Planta> plantas;
 
 	public SmartGrids() {
 		this.plantas = new LinkedHashMap<String, Planta>();

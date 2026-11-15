@@ -17,7 +17,7 @@ public abstract class Planta {
 	private double capacidad;
 	private boolean estado;
 	private String fechaInicio;
-	private HashMap<LocalDateTime, RegistroMonitoreo> monitoreos;
+	private LinkedHashMap<LocalDateTime, RegistroMonitoreo> monitoreos;
 	private LinkedHashMap<LocalDateTime, Boolean> actividad;
 	private LocalDateTime ultimoCambio;
 
@@ -100,8 +100,8 @@ public abstract class Planta {
 		if (!this.estado) {
 			throw new RuntimeException("La planta ya esta inactiva");
 		}
-		if(fechaHoraParseada.isBefore(ultimoCambio)) {
-			throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores al ultimo registro");
+		if (fechaHoraParseada.isBefore(ultimoCambio) || monitoreos.containsKey(fechaHoraParseada.truncatedTo(ChronoUnit.HOURS))) {
+		    throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores o iguales a un monitoreo existente");
 		}
 		this.estado = false;
 		actividad.put(fechaHoraParseada, false);
