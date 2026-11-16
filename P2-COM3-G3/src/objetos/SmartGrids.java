@@ -5,13 +5,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Iterator;
 
 public class SmartGrids implements ISmartGrids {
 
@@ -304,6 +301,9 @@ public class SmartGrids implements ISmartGrids {
     }
 
 	private void validacionesRegistroPlanta(String nombre, String fechaHoraPuestaEnFuncionamiento, String direccion, double capacidadMaxima, String fuentePrimaria) {
+		if (nombre == null || nombre.length() <= 0) {
+			throw new RuntimeException("El nombre no puede ser vacio o null");
+		}
 		if (existePlanta(nombre)) {
 			throw new RuntimeException("Ya existe una planta con ese nombre");
 		}
@@ -311,9 +311,7 @@ public class SmartGrids implements ISmartGrids {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
 		
-		if (nombre == null || nombre.length() <= 0) {
-			throw new RuntimeException("El nombre no puede ser vacio o null");
-		}
+		
 		if (direccion == null || direccion.length() <= 0) {
 			throw new RuntimeException("La direccion no puede ser vacio o null");
 		}
@@ -344,9 +342,6 @@ public class SmartGrids implements ISmartGrids {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
 		Planta planta = plantas.get(nombre);
-		if (!planta.estaActivaEn(fechaHora)) {
-			throw new RuntimeException("La planta esta inactiva");
-		}
 		if (!esNoNegativoFinito(energiaGenerada)  || incidencias < 0) {
 			throw new RuntimeException("Los datos no pueden ser negativos.");
 		}

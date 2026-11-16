@@ -1,7 +1,5 @@
 package objetos;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class Hidraulica extends PlantaRenovable {
 	private int cantidadTurbinas;

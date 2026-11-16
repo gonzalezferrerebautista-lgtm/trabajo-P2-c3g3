@@ -1,9 +1,7 @@
 package objetos;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.TreeMap;
 
 public class Eolica extends PlantaRenovable {
@@ -22,7 +20,7 @@ public class Eolica extends PlantaRenovable {
 
 	@Override
 	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias) {
-	    throw new RuntimeException("Las plantas eólicas/térmicas requieren datos adicionales.");
+	    throw new RuntimeException("Las plantas eolicas/termicas requieren datos adicionales.");
 	}
 	
 	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias, double velocidadViento) {

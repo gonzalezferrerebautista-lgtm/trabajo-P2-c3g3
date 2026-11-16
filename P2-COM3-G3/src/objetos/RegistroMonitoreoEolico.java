@@ -1,6 +1,5 @@
 package objetos;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class RegistroMonitoreoEolico extends RegistroMonitoreo {

@@ -1,8 +1,5 @@
 package objetos;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 public class Solar extends PlantaRenovable {
 	private int cantidadPanelesInstalados;
 	private double superficieCubierta;

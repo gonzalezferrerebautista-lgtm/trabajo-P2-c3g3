@@ -350,6 +350,14 @@ public class SuperMegaTest {
             () -> sistema.registrarMonitoreo("Eolica1", h(DIA1, 10), 1, 0, 6));
         assertEquals(0, sistema.totalGenerado("Eolica1"), 0.001);
     }
+    
+    @Test
+    public void monitoreoEnEolicaInactivaFalla2() {
+    	sistema.registrarMonitoreo("Eolica1", "2020-01-01T12:00:00", 1, 0, 6);
+        
+        assertThrows(RuntimeException.class,
+            () -> sistema.desactivarPlanta("Eolica1", "2020-01-01T12:01:00"));
+    }
 
     @Test
     public void monitoreoDentroDeUnPeriodoInactivoPasadoSeRechaza() {

@@ -5,11 +5,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 public abstract class Planta {
 	protected String nombre;
@@ -65,7 +63,7 @@ public abstract class Planta {
 	    if (fechaHoraParseada.isBefore(fechaHoraInicio)) {
 	        throw new RuntimeException("No se puede hacer un registro anterior a la puesta en marcha.");
 	    }
-	    if (!estaActivaEn(fechaHoraParseada.toString())) {
+	    if (!estaActivaEn(fechaHoraParseada.toString())|| !estaActivaEn(fechaHoraTruncada.toString())) {
 	        throw new RuntimeException("La planta no esta activada en esta fecha + hora.");
 	    }
 		
@@ -84,7 +82,7 @@ public abstract class Planta {
 		if (this.estado) {
 			throw new RuntimeException("La planta ya esta activa");
 		}
-		if(fechaHoraParseada.isBefore(ultimoCambio)) {
+		if(!fechaHoraParseada.isAfter(ultimoCambio)) {
 			throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores al ultimo registro");
 		}
 		this.estado = true;
@@ -100,7 +98,7 @@ public abstract class Planta {
 		if (!this.estado) {
 			throw new RuntimeException("La planta ya esta inactiva");
 		}
-		if (fechaHoraParseada.isBefore(ultimoCambio) || monitoreos.containsKey(fechaHoraParseada.truncatedTo(ChronoUnit.HOURS))) {
+		if (!fechaHoraParseada.isAfter(ultimoCambio) || monitoreos.containsKey(fechaHoraParseada.truncatedTo(ChronoUnit.HOURS))) {
 		    throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores o iguales a un monitoreo existente");
 		}
 		this.estado = false;
@@ -162,6 +160,21 @@ public abstract class Planta {
                 it.remove();
                 borrados++;
             }
+        }
+        
+        // Para que al eliminar monitoreos, verifique la ultima actualizacion real del estado/monitoreos:
+        if (borrados > 0) {
+        	LocalDateTime maxFecha = LocalDateTime.parse(this.fechaInicio);
+        	for (LocalDateTime fechaAct : actividad.keySet()) {
+        		if (fechaAct.isAfter(maxFecha)) {
+        			maxFecha = fechaAct;
+        		}
+        	}
+        	for (LocalDateTime fechaMon : monitoreos.keySet()) {
+        		if (fechaMon.isAfter(maxFecha)) {
+        			maxFecha = fechaMon;
+        		}
+        	}
         }
         return borrados;
     }
