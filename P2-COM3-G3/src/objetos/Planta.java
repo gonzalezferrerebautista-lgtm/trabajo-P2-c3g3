@@ -175,6 +175,7 @@ public abstract class Planta {
         			maxFecha = fechaMon;
         		}
         	}
+        	this.ultimoCambio = maxFecha;
         }
         return borrados;
     }
