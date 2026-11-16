@@ -1,6 +1,7 @@
 package objetos;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 public abstract class PlantaRenovable extends Planta {
@@ -15,7 +16,7 @@ public abstract class PlantaRenovable extends Planta {
 	}
 
 	public boolean cumpleCuota(String fechaHora) {
-		LocalDateTime clave = LocalDateTime.parse(fechaHora);
+		LocalDateTime clave = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
 		RegistroMonitoreo r = obtenerMonitoreo(clave);
 		if (r == null) {
 			return false;

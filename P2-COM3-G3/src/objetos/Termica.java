@@ -24,7 +24,7 @@ public class Termica extends Planta {
 	@Override
 	public boolean cumpleCuota(String fechaHora) {
 		
-		LocalDateTime clave = LocalDateTime.parse(fechaHora);
+		LocalDateTime clave = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
 		
 		RegistroMonitoreo r = obtenerMonitoreo(clave);
 		if (r == null) {

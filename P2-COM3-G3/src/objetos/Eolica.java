@@ -66,7 +66,7 @@ public class Eolica extends PlantaRenovable {
 		    	if (horaString.length() == 1) {
 		    		horaString = "0"+horaString;
 		    	}
-	    		texto.append("     "+ horaString + ": " + maximoEnHoras.get(hora) + " m/s \n");
+	    		texto.append("     ").append(horaString).append(": ").append(maximoEnHoras.get(hora)).append(" m/s \n");
 	    	}
 	    }
 	    return texto.toString();
