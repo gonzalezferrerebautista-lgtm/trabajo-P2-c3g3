@@ -57,6 +57,10 @@ public abstract class Planta {
     
 	protected void validarRegistroMonitoreo(LocalDateTime fechaHoraParseada, LocalDateTime fechaHoraTruncada) {
 		LocalDateTime fechaHoraInicio = LocalDateTime.parse(fechaInicio);
+		if (!this.estado) {
+			throw new RuntimeException("No se pueden hacer monitoreos con la planta inactiva.");
+		}
+		
 	    if (this.monitoreos.containsKey(fechaHoraTruncada)) {
 	        throw new RuntimeException("Ya hay un monitoreo para esta fecha + hora.");
 	    }
@@ -254,6 +258,10 @@ public abstract class Planta {
 	
 	protected Collection<RegistroMonitoreo> obtenerMonitoreos() {
 		return Collections.unmodifiableCollection(monitoreos.values());
+	}
+	
+	public Map<LocalDateTime, RegistroMonitoreo> getMonitoreos() {
+	    return Collections.unmodifiableMap(this.monitoreos);
 	}
 	
 
