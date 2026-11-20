@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public class RegistroMonitoreo {
 	private String nombrePlanta;
 	private LocalDateTime fecha;
+	private LocalDateTime fechaOriginal;
 	private int incidencias;
 	private double energiaGenerada;
 
@@ -31,6 +32,7 @@ public class RegistroMonitoreo {
 		return energiaGenerada;
 	}
 	
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		

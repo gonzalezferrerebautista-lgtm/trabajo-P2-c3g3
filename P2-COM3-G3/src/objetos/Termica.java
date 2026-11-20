@@ -10,7 +10,7 @@ public class Termica extends Planta {
 
 	@Override
 	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias) {
-	    throw new RuntimeException("Las plantas eólicas/térmicas requieren datos adicionales.");
+	    throw new RuntimeException("Las plantas térmicas requieren datos adicionales.");
 	}
 	
 	public Termica(String nombre, String direccion, double capacidad, boolean estado, String fechaInicio,
@@ -31,10 +31,11 @@ public class Termica extends Planta {
 			return false;
 		}
 		RegistroMonitoreoTermico rt = (RegistroMonitoreoTermico) r;
-		return rt.getEnergiaGenerada() >= (getCapacidad() / 2) && rt.getCantidadCO2Generado() < objetivoEmision;
+		return rt.getEnergiaGenerada() >= capacidadMinimaCuota() && rt.getCantidadCO2Generado() < objetivoEmision;
 
 	}
 
+	@Override
 	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias, double co2Emitido,
 			double combustibleUtilizado) {
 		if (!SmartGrids.esFechaHoraValida(fechaHora)) {

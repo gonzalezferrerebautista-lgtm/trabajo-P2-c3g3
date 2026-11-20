@@ -67,7 +67,7 @@ public abstract class Planta {
 	    if (fechaHoraParseada.isBefore(fechaHoraInicio)) {
 	        throw new RuntimeException("No se puede hacer un registro anterior a la puesta en marcha.");
 	    }
-	    if (!estaActivaEn(fechaHoraParseada.toString())|| !estaActivaEn(fechaHoraTruncada.toString())) {
+	    if (!estaActivaEn(fechaHoraParseada.toString())) {
 	        throw new RuntimeException("La planta no esta activada en esta fecha + hora.");
 	    }
 		
@@ -102,7 +102,7 @@ public abstract class Planta {
 		if (!this.estado) {
 			throw new RuntimeException("La planta ya esta inactiva");
 		}
-		if (!fechaHoraParseada.isAfter(ultimoCambio) || monitoreos.containsKey(fechaHoraParseada.truncatedTo(ChronoUnit.HOURS))) {
+		if (!fechaHoraParseada.isAfter(ultimoCambio)) {
 		    throw new RuntimeException("La actividad no puede ser modificada para dias y horas menores o iguales a un monitoreo existente");
 		}
 		this.estado = false;

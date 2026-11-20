@@ -15,6 +15,7 @@ public abstract class PlantaRenovable extends Planta {
 		this.fuentePrimaria = fuentePrimaria;
 	}
 
+	@Override
 	public boolean cumpleCuota(String fechaHora) {
 		LocalDateTime clave = LocalDateTime.parse(fechaHora).truncatedTo(ChronoUnit.HOURS);
 		RegistroMonitoreo r = obtenerMonitoreo(clave);

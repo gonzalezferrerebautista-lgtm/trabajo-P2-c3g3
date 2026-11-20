@@ -20,9 +20,10 @@ public class Eolica extends PlantaRenovable {
 
 	@Override
 	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias) {
-	    throw new RuntimeException("Las plantas eolicas/termicas requieren datos adicionales.");
+	    throw new RuntimeException("Las plantas eolicas requieren datos adicionales.");
 	}
 	
+	@Override
 	public void registrarMonitoreo(String fechaHora, double energiaGenerada, int incidencias, double velocidadViento) {
 		if (!SmartGrids.esFechaHoraValida(fechaHora)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
@@ -38,7 +39,7 @@ public class Eolica extends PlantaRenovable {
 	
 	@Override
 	public String reportePocoViento() {
-		return horasConPocoViento() + "\n";
+		return horasConPocoViento();
 	}
 	
 	

@@ -301,7 +301,7 @@ public class SmartGrids implements ISmartGrids {
     }
 
 	private void validacionesRegistroPlanta(String nombre, String fechaHoraPuestaEnFuncionamiento, String direccion, double capacidadMaxima, String fuentePrimaria) {
-		if (nombre == null || nombre.length() <= 0) {
+		if (nombre == null || nombre.length() <= 0 || nombre.trim().isEmpty()) {
 			throw new RuntimeException("El nombre no puede ser vacio o null");
 		}
 		if (existePlanta(nombre)) {
@@ -318,7 +318,7 @@ public class SmartGrids implements ISmartGrids {
 		if (!esPositivoFinito(capacidadMaxima)) {
 			throw new RuntimeException("La capacidad no puede ser 0 o negativo.");
 		}
-		if (fuentePrimaria == null || fuentePrimaria.isEmpty() || fuentePrimaria.length() <= 0) {
+		if (fuentePrimaria == null || fuentePrimaria.isEmpty() || fuentePrimaria.length() <= 0 || fuentePrimaria.trim().isEmpty()) {
 			throw new RuntimeException("La fuente primaria o tipo de combustible no puede ser vacio.");
 		}
 	}
@@ -341,7 +341,6 @@ public class SmartGrids implements ISmartGrids {
 		if (!esFechaHoraValida(fechaHora)) {
 			throw new RuntimeException("La fecha y hora no tienen un formato valido");
 		}
-		Planta planta = plantas.get(nombre);
 		if (!esNoNegativoFinito(energiaGenerada)  || incidencias < 0) {
 			throw new RuntimeException("Los datos no pueden ser negativos.");
 		}
@@ -351,6 +350,7 @@ public class SmartGrids implements ISmartGrids {
 		return plantas.containsKey(nombre);
 	}
 	
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SMARTGRIDS - SISTEMA DE CONTROL DE PLANTAS\n");
