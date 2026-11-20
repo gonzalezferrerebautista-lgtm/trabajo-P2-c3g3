@@ -1,6 +1,7 @@
 package objetos;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 public class RegistroMonitoreo {
 	private String nombrePlanta;
@@ -11,7 +12,8 @@ public class RegistroMonitoreo {
 
 	public RegistroMonitoreo(String nombrePlanta, LocalDateTime fecha, int incidencias, double energiaGenerada) {
 		this.nombrePlanta = nombrePlanta;
-		this.fecha = fecha;
+		this.fecha = fecha.truncatedTo(ChronoUnit.HOURS);
+		this.fechaOriginal = fecha;
 		this.incidencias = incidencias;
 		this.energiaGenerada = energiaGenerada;
 	}
@@ -22,6 +24,9 @@ public class RegistroMonitoreo {
 
 	public LocalDateTime getFecha() {
 		return fecha;
+	}
+	public LocalDateTime getFechaOriginal() {
+		return fechaOriginal;
 	}
 
 	public int getIncidencias() {

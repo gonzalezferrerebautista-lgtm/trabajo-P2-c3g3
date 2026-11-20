@@ -32,7 +32,7 @@ public class Eolica extends PlantaRenovable {
 		LocalDateTime fechaHoraTruncada = fechaHoraOriginal.truncatedTo(ChronoUnit.HOURS);
 		super.validarRegistroMonitoreo(fechaHoraOriginal, fechaHoraTruncada);
 
-		RegistroMonitoreoEolico registro = new RegistroMonitoreoEolico(nombre, fechaHoraTruncada, incidencias,
+		RegistroMonitoreoEolico registro = new RegistroMonitoreoEolico(nombre, fechaHoraOriginal, incidencias,
 				energiaGenerada, velocidadViento);
 		guardarMonitoreo(fechaHoraOriginal, fechaHoraTruncada, registro);
 	}

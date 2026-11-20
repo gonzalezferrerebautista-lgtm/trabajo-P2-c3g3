@@ -301,7 +301,7 @@ public class SmartGrids implements ISmartGrids {
     }
 
 	private void validacionesRegistroPlanta(String nombre, String fechaHoraPuestaEnFuncionamiento, String direccion, double capacidadMaxima, String fuentePrimaria) {
-		if (nombre == null || nombre.length() <= 0 || nombre.trim().isEmpty()) {
+		if (nombre == null || nombre.trim().isEmpty()) {
 			throw new RuntimeException("El nombre no puede ser vacio o null");
 		}
 		if (existePlanta(nombre)) {
@@ -312,13 +312,13 @@ public class SmartGrids implements ISmartGrids {
 		}
 		
 		
-		if (direccion == null || direccion.length() <= 0) {
+		if (direccion == null || direccion.trim().isEmpty()) {
 			throw new RuntimeException("La direccion no puede ser vacio o null");
 		}
 		if (!esPositivoFinito(capacidadMaxima)) {
 			throw new RuntimeException("La capacidad no puede ser 0 o negativo.");
 		}
-		if (fuentePrimaria == null || fuentePrimaria.isEmpty() || fuentePrimaria.length() <= 0 || fuentePrimaria.trim().isEmpty()) {
+		if (fuentePrimaria == null || fuentePrimaria.trim().isEmpty()) {
 			throw new RuntimeException("La fuente primaria o tipo de combustible no puede ser vacio.");
 		}
 	}

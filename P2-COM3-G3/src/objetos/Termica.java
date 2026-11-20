@@ -43,7 +43,7 @@ public class Termica extends Planta {
 		}
 		LocalDateTime fechaHoraOriginal = LocalDateTime.parse(fechaHora);
 		LocalDateTime fechaHoraTruncada = fechaHoraOriginal.truncatedTo(ChronoUnit.HOURS);
-		super.validarRegistroMonitoreo(fechaHoraOriginal, fechaHoraTruncada);
+		super.validarRegistroMonitoreo(fechaHoraOriginal, fechaHoraOriginal);
 
 		RegistroMonitoreoTermico registro = new RegistroMonitoreoTermico(nombre, fechaHoraTruncada, incidencias,
 				energiaGenerada, co2Emitido, combustibleUtilizado);

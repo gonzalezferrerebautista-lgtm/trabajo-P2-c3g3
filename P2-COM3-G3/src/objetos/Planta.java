@@ -42,7 +42,7 @@ public abstract class Planta {
 		LocalDateTime fechaHoraOriginal = LocalDateTime.parse(fechaHora);
 		LocalDateTime fechaHoraTruncada = fechaHoraOriginal.truncatedTo(ChronoUnit.HOURS);
 		validarRegistroMonitoreo(fechaHoraOriginal, fechaHoraTruncada);
-		RegistroMonitoreo registro = new RegistroMonitoreo(this.nombre, fechaHoraTruncada, incidencias,
+		RegistroMonitoreo registro = new RegistroMonitoreo(this.nombre, fechaHoraOriginal, incidencias,
 				energiaGenerada);
 		guardarMonitoreo(fechaHoraOriginal, fechaHoraTruncada, registro);
 
@@ -174,9 +174,9 @@ public abstract class Planta {
         			maxFecha = fechaAct;
         		}
         	}
-        	for (LocalDateTime fechaMon : monitoreos.keySet()) {
-        		if (fechaMon.isAfter(maxFecha)) {
-        			maxFecha = fechaMon;
+        	for (RegistroMonitoreo r : monitoreos.values()) {
+        		if (r.getFechaOriginal().isAfter(maxFecha)) {
+        			maxFecha = r.getFechaOriginal();
         		}
         	}
         	this.ultimoCambio = maxFecha;
