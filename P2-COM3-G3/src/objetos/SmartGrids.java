@@ -228,7 +228,7 @@ public class SmartGrids implements ISmartGrids {
 	@Override 
 	public String horasSinVelocidadMinimaPorPlantaEolica() {
 		StringBuilder texto = new StringBuilder();
-	    texto.append("Plantas Eolicas: Horas con poco viento \n");
+	    texto.append("Plantas Eolicas: Horas con poco viento\n");
 	    for(Planta planta: plantas.values()) {    	
 	    	texto.append(planta.reportePocoViento());
 	    }

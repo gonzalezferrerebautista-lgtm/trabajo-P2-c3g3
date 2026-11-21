@@ -19,7 +19,7 @@ public class RegistroMonitoreoEolico extends RegistroMonitoreo {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(super.toString());
-		sb.append("\n	- VELOCIDAD PROMEDIO VIENTO: ").append(velocidadPromedioViento).append(" ");;
+		sb.append("\n	- VELOCIDAD PROMEDIO VIENTO: ").append(velocidadPromedioViento).append(" ");
 		return sb.toString();
 	}
 }

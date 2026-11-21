@@ -45,7 +45,7 @@ public class Eolica extends PlantaRenovable {
 	
 	public String horasConPocoViento() {
 	    StringBuilder texto = new StringBuilder();
-	    texto.append("- ").append(nombre).append(": ").append(velocidadMinViento).append(" m/s \n");
+	    texto.append("- ").append(nombre).append(": ").append(velocidadMinViento).append(" m/s\n");
 	    TreeMap<Integer, Double> maximoEnHoras = new TreeMap<Integer, Double>();
 	    for(RegistroMonitoreo monitoreo: obtenerMonitoreos()) {
 	    		//Cargo los mejores tiempos por hora.
@@ -67,7 +67,7 @@ public class Eolica extends PlantaRenovable {
 		    	if (horaString.length() == 1) {
 		    		horaString = "0"+horaString;
 		    	}
-	    		texto.append("     ").append(horaString).append(": ").append(maximoEnHoras.get(hora)).append(" m/s \n");
+	    		texto.append("     ").append(horaString).append(": ").append(maximoEnHoras.get(hora)).append(" m/s\n");
 	    	}
 	    }
 	    return texto.toString();
