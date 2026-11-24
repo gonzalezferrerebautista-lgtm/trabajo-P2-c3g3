@@ -43,7 +43,7 @@ public class Eolica extends PlantaRenovable {
 	}
 	
 	
-	public String horasConPocoViento() {
+	private String horasConPocoViento() {
 	    StringBuilder texto = new StringBuilder();
 	    texto.append("- ").append(nombre).append(": ").append(velocidadMinViento).append(" m/s\n");
 	    TreeMap<Integer, Double> maximoEnHoras = new TreeMap<Integer, Double>();
